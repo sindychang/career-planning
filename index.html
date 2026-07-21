@@ -10,6 +10,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
 :root{
   --graphite:#3F4750;
@@ -116,23 +118,23 @@ body{
   min-height:100vh;
 }
 .topbar{
-  background:var(--card-bg);
-  border-bottom:1px solid var(--border);
+  background:var(--graphite-dark);
+  border-bottom:1px solid var(--graphite-dark);
   padding:14px 26px;
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:20;
   gap:12px;
 }
-.topbar-title{font-size:19px;font-weight:600;color:var(--graphite-dark);}
-.topbar-title-sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+.topbar-title{font-size:19px;font-weight:600;color:#fff;}
+.topbar-title-sub{font-size:12.5px;color:rgba(255,255,255,0.65);margin-top:2px;}
 .topbar-right{display:flex;align-items:center;gap:14px;}
 .sync-pill{
   display:flex;align-items:center;gap:6px;
-  background:var(--card-bg-2);border:1px solid var(--border);
-  padding:6px 12px;border-radius:20px;font-size:12px;color:var(--text-muted);
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);
+  padding:6px 12px;border-radius:20px;font-size:12px;color:rgba(255,255,255,0.75);
 }
 .hamburger{
-  display:none;background:none;border:none;cursor:pointer;color:var(--graphite-dark);
+  display:none;background:none;border:none;cursor:pointer;color:#fff;
   padding:6px;
 }
 .content{
@@ -171,10 +173,9 @@ body{
 
 /* ---------- Section header ---------- */
 .section-head{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;justify-content:flex-end;
   margin-bottom:18px;flex-wrap:wrap;gap:10px;
 }
-.section-head h2{font-size:17px;font-weight:600;color:var(--graphite-dark);}
 .filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
 .select,.input,.textarea{
   border:1px solid var(--border);background:var(--card-bg);
@@ -235,6 +236,12 @@ body{
 .card-link{color:var(--accent-blue);font-size:12.5px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
 .card-link:hover{text-decoration:underline;}
 .card-notes{font-size:13px;color:var(--text);background:var(--card-bg-2);padding:8px 10px;border-radius:6px;margin-top:2px;white-space:pre-wrap;line-height:1.65;}
+.version-manage-row{display:none;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.version-manage-row.open{display:flex;}
+.free-list{list-style:none;margin:0;padding-left:0;line-height:1.65;}
+.free-list li{display:flex;align-items:flex-start;gap:7px;margin-bottom:3px;}
+.free-list li .bullet-mark{flex-shrink:0;color:var(--graphite-dark);font-weight:700;line-height:1.65;}
+.free-list li .bullet-text{flex:1;}
 .card-desc-label{font-size:11.5px;color:var(--text-muted);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.02em;}
 
 /* ---------- Progress bar ---------- */
@@ -250,6 +257,13 @@ body{
   border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;
   font-family:inherit;cursor:pointer;flex-shrink:0;
 }
+.status-mini-select.st-gray{background:var(--card-bg-2);color:var(--text-muted);border-color:var(--border);}
+.status-mini-select.st-blue{background:var(--accent-blue-bg);color:var(--accent-blue);border-color:transparent;}
+.status-mini-select.st-teal{background:var(--accent-teal-bg);color:var(--accent-teal);border-color:transparent;}
+.status-mini-select.st-red{background:var(--accent-red-bg);color:var(--accent-red);border-color:transparent;}
+.status-mini-select.st-amber{background:var(--accent-amber-bg);color:var(--accent-amber);border-color:transparent;}
+.job-highlight{box-shadow:0 0 0 3px var(--accent-blue) !important;}
+.job-top-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
 
 /* ---------- More menu (···) ---------- */
 .more-menu-wrap{position:relative;flex-shrink:0;}
@@ -286,7 +300,9 @@ body{
 /* ---------- Learning list ---------- */
 .learn-status-group{margin-bottom:22px;}
 .learn-status-group h3{font-size:13.5px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.03em;}
-.learn-log-list{margin-top:6px;border-top:1px solid var(--border);padding-top:6px;}
+.learn-log-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.learn-meta{display:flex;flex-direction:column;gap:8px;margin-top:2px;padding-top:10px;border-top:1px solid var(--border);}
+.learn-log-list{margin-top:2px;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:2px;}
 .learn-log-item{display:flex;gap:8px;font-size:12px;padding:4px 0;color:var(--text-muted);}
 .learn-log-item .learn-log-date{flex-shrink:0;font-weight:600;color:var(--text);white-space:nowrap;}
 .learn-log-item .learn-log-note{white-space:pre-wrap;}
@@ -294,7 +310,7 @@ body{
 /* ---------- Resume ---------- */
 .resume-section{margin-bottom:20px;}
 .resume-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.resume-section-head h3{font-size:14px;font-weight:600;color:var(--graphite-dark);}
+.resume-section-head h3{font-size:14px;font-weight:600;color:var(--title-accent);}
 .resume-block{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
 .resume-exp-item{border-left:2px solid var(--border-strong);padding:4px 0 4px 14px;margin-bottom:12px;border-radius:0;}
 .resume-exp-item:last-child{margin-bottom:0;}
@@ -338,10 +354,10 @@ body{
 .cal-legend-dot{width:9px;height:9px;border-radius:3px;}
 
 /* ---------- Interviews ---------- */
-.interview-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
-.prep-list{list-style:none;margin-top:8px;}
-.prep-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border);}
-.prep-item:last-child{border-bottom:none;}
+.interview-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px;display:flex;flex-direction:column;gap:8px;}
+.iv-subline{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--graphite-dark);}
+.prep-list{list-style:none;display:flex;flex-direction:column;gap:4px;}
+.prep-item{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;}
 .prep-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--graphite);cursor:pointer;flex-shrink:0;}
 .prep-item.done span{text-decoration:line-through;color:var(--text-faint);}
 .prep-item span{flex:1;}
@@ -512,7 +528,6 @@ body{
     <!-- ===================== JOBS ===================== -->
     <div class="page" id="page-jobs">
       <div class="section-head">
-        <h2>職缺追蹤</h2>
         <button class="btn btn-primary" id="addJobBtn"><i data-icon="plus"></i>新增職缺</button>
       </div>
       <div class="filters-row">
@@ -534,20 +549,30 @@ body{
     <!-- ===================== RESUME ===================== -->
     <div class="page" id="page-resume">
       <div class="section-head">
-        <h2>我的履歷</h2>
-        <button class="btn btn-primary" id="editResumeBtn"><i data-icon="edit-2"></i>編輯履歷</button>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-left:auto;">
+          <button class="btn btn-primary" id="editResumeBtn"><i data-icon="edit-2"></i>編輯履歷</button>
+          <button class="btn btn-secondary btn-sm" id="importPdfBtn" title="PDF 匯入（實驗性）"><i data-icon="upload"></i>匯入</button>
+          <input type="file" id="pdfImportFileInput" accept="application/pdf" style="display:none;">
+          <div class="more-menu-wrap">
+            <button class="btn btn-secondary btn-sm" id="exportResumeBtn"><i data-icon="download"></i>匯出</button>
+            <div class="more-menu" id="exportResumeMenu">
+              <button id="exportPdfBtn"><i data-icon="file-text"></i>PDF</button>
+              <button id="exportWordBtn"><i data-icon="file-text"></i>Word</button>
+              <button id="exportPptxBtn"><i data-icon="file-text"></i>PowerPoint</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="panel" style="margin-bottom:16px;">
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
           <label style="font-size:12.5px;font-weight:600;color:var(--text-muted);">履歷版本</label>
           <select class="select" id="resumeVersionSelect" style="min-width:160px;"></select>
+          <button class="btn btn-secondary btn-sm" id="toggleVersionManageBtn"><i data-icon="chevron-down"></i>版本管理</button>
+        </div>
+        <div class="version-manage-row" id="versionManageRow">
           <button class="btn btn-secondary btn-sm" id="newResumeVersionBtn"><i data-icon="plus"></i>新增版本</button>
           <button class="btn btn-secondary btn-sm" id="renameResumeVersionBtn"><i data-icon="edit-2"></i>重新命名</button>
           <button class="btn btn-secondary btn-sm" id="deleteResumeVersionBtn"><i data-icon="trash-2"></i>刪除版本</button>
-          <span style="flex:1;"></span>
-          <button class="btn btn-secondary btn-sm" id="importPdfBtn"><i data-icon="upload"></i>PDF 匯入（實驗性）</button>
-          <input type="file" id="pdfImportFileInput" accept="application/pdf" style="display:none;">
-          <button class="btn btn-secondary btn-sm" id="exportResumePdfBtn"><i data-icon="download"></i>預覽 / 匯出 PDF</button>
         </div>
       </div>
       <div class="resume-block" style="margin-bottom:16px;">
@@ -565,19 +590,32 @@ body{
         </div>
         <div id="resumeExpView"></div>
       </div>
-      <div class="resume-block">
+      <div class="resume-block" style="margin-bottom:16px;">
         <div class="resume-section-head">
-          <h3>技能與證照</h3>
+          <h3>學歷</h3>
+          <button class="btn btn-secondary btn-sm" id="addEduBtn"><i data-icon="plus"></i>新增學歷</button>
+        </div>
+        <div id="resumeEduView"></div>
+      </div>
+      <div class="resume-block" style="margin-bottom:16px;">
+        <div class="resume-section-head">
+          <h3>專長與技能</h3>
           <button class="btn btn-secondary btn-sm" id="addSkillBtn"><i data-icon="plus"></i>新增技能</button>
         </div>
-        <div class="tag-list" id="resumeSkillsView"></div>
+        <ul class="free-list" id="resumeSkillsView"></ul>
+      </div>
+      <div class="resume-block">
+        <div class="resume-section-head">
+          <h3>推薦人</h3>
+          <button class="btn btn-secondary btn-sm" id="addRefBtn"><i data-icon="plus"></i>新增推薦人</button>
+        </div>
+        <div id="resumeRefView"></div>
       </div>
     </div>
 
     <!-- ===================== LEARNING ===================== -->
     <div class="page" id="page-learning">
       <div class="section-head">
-        <h2>學習進度</h2>
         <button class="btn btn-primary" id="addLearnBtn"><i data-icon="plus"></i>新增學習項目</button>
       </div>
       <div id="learningLists"></div>
@@ -586,7 +624,6 @@ body{
     <!-- ===================== CALENDAR ===================== -->
     <div class="page" id="page-calendar">
       <div class="section-head">
-        <h2>時程規劃</h2>
         <button class="btn btn-primary" id="addEventBtn"><i data-icon="plus"></i>新增事項</button>
       </div>
       <div class="panel">
@@ -611,7 +648,6 @@ body{
     <!-- ===================== INTERVIEWS ===================== -->
     <div class="page" id="page-interviews">
       <div class="section-head">
-        <h2>面試紀錄</h2>
         <button class="btn btn-primary" id="addInterviewBtn"><i data-icon="plus"></i>新增面試紀錄</button>
       </div>
       <div id="interviewsList"></div>
@@ -619,7 +655,6 @@ body{
 
     <!-- ===================== SETTINGS ===================== -->
     <div class="page" id="page-settings">
-      <div class="section-head"><h2>設定</h2></div>
       <div class="settings-grid">
         <div class="settings-block">
           <h3>同步狀態</h3>
@@ -752,11 +787,32 @@ const state = {
 function blankResumeVersion(name) {
   return {
     name: name || "新履歷版本",
-    basic: { name: "", targetRole: "財務數據分析師", targetIndustry: "", email: "", phone: "" },
+    basic: { name: "", targetRole: "財務數據分析師", targetIndustry: "", email: "", phone: "", address: "" },
     summary: "",
     experience: {},
-    skills: {}
+    education: {},
+    skills: {},
+    references: {}
   };
+}
+// 確保履歷版本物件一定具備所有必要欄位（basic/summary/experience/education/skills/references），
+// 避免任何來源（舊資料遷移、PDF 匯入、雲端同步後的資料）缺欄位造成存檔時噴錯。
+function normalizeResumeVersion(v) {
+  if (!v || typeof v !== "object") v = {};
+  if (typeof v.name !== "string" || !v.name) v.name = "未命名履歷";
+  if (!v.basic || typeof v.basic !== "object") v.basic = {};
+  v.basic.name = v.basic.name || "";
+  v.basic.targetRole = v.basic.targetRole || "";
+  v.basic.targetIndustry = v.basic.targetIndustry || "";
+  v.basic.email = v.basic.email || "";
+  v.basic.phone = v.basic.phone || "";
+  v.basic.address = v.basic.address || "";
+  if (typeof v.summary !== "string") v.summary = "";
+  if (!v.experience || typeof v.experience !== "object") v.experience = {};
+  if (!v.education || typeof v.education !== "object") v.education = {};
+  if (!v.skills || typeof v.skills !== "object") v.skills = {};
+  if (!v.references || typeof v.references !== "object") v.references = {};
+  return v;
 }
 function ensureResumeVersions() {
   // 相容舊資料：舊版本是單一 state.resume，遷移成第一個版本
@@ -773,6 +829,9 @@ function ensureResumeVersions() {
     state.resumeVersions[id] = blankResumeVersion("預設履歷");
     state.activeResumeVersion = id;
   }
+  Object.keys(state.resumeVersions).forEach(function (k) {
+    state.resumeVersions[k] = normalizeResumeVersion(state.resumeVersions[k]);
+  });
   if (!state.activeResumeVersion || !state.resumeVersions[state.activeResumeVersion]) {
     state.activeResumeVersion = Object.keys(state.resumeVersions)[0];
   }
@@ -796,6 +855,21 @@ function esc(str) {
   });
 }
 function nl2br(str) { return esc(str).replace(/\n/g, "<br>"); }
+// 依使用者輸入的格式顯示：偵測到列點符號（-、•、*、1. 等）就渲染成真正的項目符號清單，
+// 否則維持原本段落換行顯示。用於工作內容、學歷備註等自由文字欄位。
+const BULLET_RE = /^([-•‧*●○▪]|[0-9]+[.\)、])\s*/;
+function formatFreeText(str) {
+  if (!str) return "";
+  const lines = str.split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l.length; });
+  if (!lines.length) return "";
+  const bulletCount = lines.filter(function (l) { return BULLET_RE.test(l); }).length;
+  if (bulletCount >= Math.ceil(lines.length * 0.6)) {
+    return '<ul class="free-list">' + lines.map(function (l) {
+      return '<li><span class="bullet-mark">•</span><span class="bullet-text">' + esc(l.replace(BULLET_RE, "")) + "</span></li>";
+    }).join("") + "</ul>";
+  }
+  return nl2br(str);
+}
 function splitLines(str) {
   if (!str) return [];
   const raw = str.indexOf("\n") >= 0 ? str.split("\n") : str.split(",");
@@ -842,7 +916,16 @@ function openModal(title, bodyHtml, footButtons) {
     const btn = document.createElement("button");
     btn.className = "btn " + (b.cls || "btn-secondary");
     btn.innerHTML = b.icon ? fi(b.icon, 15) + b.label : b.label;
-    btn.onclick = b.onClick;
+    // 安全網：任何按鈕動作（尤其是「儲存」）若拋出未預期的例外，
+    // 一律顯示錯誤提示，避免像之前那樣按了沒反應、卻沒有任何說明。
+    btn.onclick = function (e) {
+      try {
+        b.onClick.call(this, e);
+      } catch (err) {
+        console.error("操作失敗", err);
+        toast("操作失敗，請重新整理頁面後再試一次：" + err.message, "error");
+      }
+    };
     foot.appendChild(btn);
   });
   document.getElementById("modalOverlay").classList.add("open");
@@ -865,7 +948,12 @@ document.getElementById("confirmCancelBtn").onclick = function () {
 };
 document.getElementById("confirmOkBtn").onclick = function () {
   document.getElementById("confirmOverlay").classList.remove("open");
-  if (confirmCallback) confirmCallback();
+  try {
+    if (confirmCallback) confirmCallback();
+  } catch (err) {
+    console.error("刪除失敗", err);
+    toast("刪除失敗，請重新整理頁面後再試一次：" + err.message, "error");
+  }
 };
 document.getElementById("confirmOverlay").addEventListener("click", function (e) {
   if (e.target === this) this.classList.remove("open");
@@ -963,13 +1051,22 @@ function saveToCloud(path, data) {
     return;
   }
   setSyncStatus("yellow");
-  db.ref(path).set(data)
-    .then(function () { setSyncStatus("green", Date.now()); })
-    .catch(function (err) {
-      console.error(err);
-      setSyncStatus("red");
-      toast("雲端同步失敗，已保留在本機備份：" + err.message, "error");
-    });
+  try {
+    // JSON 往返可以自動清除物件中任何 undefined 欄位（Firebase 的 set() 只要遇到 undefined
+    // 就會「同步拋出例外」，不會走到 .catch()，導致存檔看起來完全沒反應），確保寫入前資料乾淨。
+    const cleanData = JSON.parse(JSON.stringify(data));
+    db.ref(path).set(cleanData)
+      .then(function () { setSyncStatus("green", Date.now()); })
+      .catch(function (err) {
+        console.error(err);
+        setSyncStatus("red");
+        toast("雲端同步失敗，已保留在本機備份：" + err.message, "error");
+      });
+  } catch (err) {
+    console.error("寫入雲端前資料處理失敗", err);
+    setSyncStatus("red");
+    toast("雲端同步失敗，已保留在本機備份：" + err.message, "error");
+  }
 }
 function loadFromCloud() {
   // 先載入本機備份，確保畫面立即有資料可看
@@ -987,7 +1084,7 @@ function loadFromCloud() {
       state.learning = val.learning || {};
       state.events = val.events || {};
       state.interviews = val.interviews || {};
-      state.resume = val.resume; // 舊資料相容，ensureResumeVersions() 會自動遷移
+      if (val.resume !== undefined) { state.resume = val.resume; } else { delete state.resume; } // 舊資料相容，ensureResumeVersions() 會自動遷移
       state.resumeVersions = val.resumeVersions || {};
       state.activeResumeVersion = val.activeResumeVersion || null;
       ensureResumeVersions();
@@ -1053,7 +1150,13 @@ function renderDashboard() {
   const learnSorted = learning.filter(function (l) { return l.status !== "done"; }).slice(0, 6);
   const statusLabel = { not_started: "未開始", in_progress: "學習中", done: "已學會" };
   document.getElementById("dashLearning").innerHTML = learnSorted.length ? learnSorted.map(function (l) {
-    return '<div class="mini-row"><div><div class="mini-row-title">' + esc(l.name) + '</div><div class="mini-row-sub">' + esc(l.category || "") + '</div></div><span class="badge ' + (l.status === "in_progress" ? "blue" : "gray") + '">' + statusLabel[l.status] + '</span></div>';
+    const progress = l.progress || 0;
+    return '<div class="mini-row" style="flex-direction:column;align-items:stretch;gap:6px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+      '<div><div class="mini-row-title">' + esc(l.name) + '</div><div class="mini-row-sub">' + esc(l.category || "") + '</div></div>' +
+      '<span class="badge ' + (l.status === "in_progress" ? "blue" : "gray") + '">' + statusLabel[l.status] + '</span></div>' +
+      '<div class="progress-row"><div class="progress-bar-track" style="flex:1;"><div class="progress-bar-fill" style="width:' + progress + '%"></div></div><span class="progress-pct">' + progress + '%</span></div>' +
+      '</div>';
   }).join("") : '<div class="empty-note">目前沒有學習項目</div>';
 }
 
@@ -1068,6 +1171,7 @@ const jobStatusMeta = {
   rejected: { label: "已婉拒/未通過", cls: "red" }
 };
 const jobCategoryPresets = ["數據分析", "稽核", "PM", "財務人員"];
+const expandedJobIds = new Set();
 
 document.getElementById("jobStatusFilter").addEventListener("change", renderJobs);
 document.getElementById("jobCategoryFilter").addEventListener("change", renderJobs);
@@ -1099,28 +1203,57 @@ function renderJobs() {
   grid.innerHTML = jobs.map(function (entry) {
     const id = entry[0], j = entry[1];
     const meta = jobStatusMeta[j.status] || jobStatusMeta.watching;
-    return '<div class="card">' +
-      '<div class="card-top"><div><div class="card-title title-accent">' + esc(j.title) + '</div><div class="card-sub">' + esc(j.company || "") + '</div></div>' +
-      '<span class="badge ' + meta.cls + '">' + meta.label + '</span></div>' +
-      (j.category ? '<div><span class="badge purple">' + esc(j.category) + '</span></div>' : "") +
-      (j.resumeVersionId && state.resumeVersions[j.resumeVersionId] ? '<div class="card-meta-row">' + fi("file-text", 13) + '<span>建議使用履歷：' + esc(state.resumeVersions[j.resumeVersionId].name) + '</span></div>' : "") +
-      (j.location || j.jobType ? '<div class="card-meta-row">' + fi("map-pin", 13) + '<span>' + esc(j.location || "未填地點") + (j.jobType ? " · " + esc(j.jobType) : "") + '</span></div>' : "") +
-      (j.jobDesc ? '<div><div class="card-desc-label">工作內容</div><div class="card-notes" style="margin-top:0;">' + nl2br(j.jobDesc) + '</div></div>' : "") +
-      (j.mustHave ? '<div><div class="card-desc-label">必要能力</div><div class="tag-list vertical">' + splitLines(j.mustHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
-      (j.niceToHave ? '<div><div class="card-desc-label">加分能力</div><div class="tag-list vertical">' + splitLines(j.niceToHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
-      (j.notes ? '<div class="card-notes">' + nl2br(j.notes) + '</div>' : "") +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">' +
-      (j.url ? '<a class="card-link" href="' + esc(j.url) + '" target="_blank" rel="noopener">' + fi("external-link", 13) + '職缺連結</a>' : '<span></span>') +
+    const expanded = expandedJobIds.has(id);
+    const hasDetails = j.resumeVersionId || j.jobDesc || j.mustHave || j.niceToHave || j.notes || j.url;
+    return '<div class="card" id="job-card-' + id + '">' +
+      '<div class="job-top-row">' +
+      (j.category ? '<span class="badge purple">' + esc(j.category) + '</span>' : '<span></span>') +
+      '<select class="status-mini-select job-status-select st-' + meta.cls + '" data-id="' + id + '">' +
+      Object.keys(jobStatusMeta).map(function (k) { return '<option value="' + k + '"' + (j.status === k ? " selected" : "") + '>' + jobStatusMeta[k].label + '</option>'; }).join("") +
+      '</select>' +
+      '</div>' +
+      '<div class="card-top job-toggle-zone" data-toggle-job="' + id + '" style="cursor:pointer;">' +
+      '<div><div class="card-title title-accent">' + esc(j.title) + '</div><div class="card-sub">' + esc(j.company || "") + '</div></div>' +
+      (hasDetails ? '<span class="icon-btn" style="pointer-events:none;">' + fi(expanded ? "chevron-up" : "chevron-down", 15) + '</span>' : "") +
+      '</div>' +
+      (j.location || j.jobType ? '<div class="card-meta-row job-toggle-zone" data-toggle-job="' + id + '" style="cursor:pointer;">' + fi("map-pin", 13) + '<span>' + esc(j.location || "未填地點") + (j.jobType ? " · " + esc(j.jobType) : "") + '</span></div>' : "") +
+      (expanded ? (
+        (j.resumeVersionId && state.resumeVersions[j.resumeVersionId] ? '<div class="card-meta-row">' + fi("file-text", 13) + '<span>建議使用履歷：' + esc(state.resumeVersions[j.resumeVersionId].name) + '</span></div>' : "") +
+        (j.jobDesc ? '<div><div class="card-desc-label">工作內容</div><div class="card-notes" style="margin-top:0;">' + formatFreeText(j.jobDesc) + '</div></div>' : "") +
+        (j.mustHave ? '<div><div class="card-desc-label">必要能力</div><div class="tag-list vertical">' + splitLines(j.mustHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
+        (j.niceToHave ? '<div><div class="card-desc-label">加分能力</div><div class="tag-list vertical">' + splitLines(j.niceToHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
+        (j.notes ? '<div class="card-notes">' + nl2br(j.notes) + '</div>' : "") +
+        (j.url ? '<a class="card-link" href="' + esc(j.url) + '" target="_blank" rel="noopener">' + fi("external-link", 13) + '職缺連結</a>' : "")
+      ) : "") +
+      '<div style="display:flex;justify-content:flex-end;align-items:center;margin-top:4px;">' +
       '<div class="card-actions"><button class="icon-btn" data-edit-job="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-job="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
       '</div></div>';
   }).join("");
 
-  grid.querySelectorAll("[data-edit-job]").forEach(function (b) { b.onclick = function () { openJobModal(this.getAttribute("data-edit-job")); }; });
+  grid.querySelectorAll("[data-toggle-job]").forEach(function (el) {
+    el.onclick = function () {
+      const id = this.getAttribute("data-toggle-job");
+      if (expandedJobIds.has(id)) expandedJobIds.delete(id); else expandedJobIds.add(id);
+      renderJobs();
+    };
+  });
+  grid.querySelectorAll(".job-status-select").forEach(function (sel) {
+    sel.onclick = function (e) { e.stopPropagation(); };
+    sel.onchange = function () {
+      state.jobs[this.getAttribute("data-id")].status = this.value;
+      persist();
+      renderJobs();
+    };
+  });
+  grid.querySelectorAll("[data-edit-job]").forEach(function (b) {
+    b.onclick = function (e) { e.stopPropagation(); openJobModal(this.getAttribute("data-edit-job")); };
+  });
   grid.querySelectorAll("[data-del-job]").forEach(function (b) {
-    b.onclick = function () {
+    b.onclick = function (e) {
+      e.stopPropagation();
       const id = this.getAttribute("data-del-job");
       openConfirm("確定要刪除「" + (state.jobs[id] ? state.jobs[id].title : "") + "」這筆職缺嗎？", function () {
-        delete state.jobs[id]; persist(); toast("已刪除職缺");
+        delete state.jobs[id]; expandedJobIds.delete(id); persist(); toast("已刪除職缺");
       });
     };
   });
@@ -1212,9 +1345,10 @@ function renderResume() {
     '<div class="kv-row"><span class="k">目標職務</span><span class="v">' + esc(b.targetRole || "未填") + '</span></div>' +
     '<div class="kv-row"><span class="k">目標產業</span><span class="v">' + esc(b.targetIndustry || "未填") + '</span></div>' +
     '<div class="kv-row"><span class="k">Email</span><span class="v">' + esc(b.email || "未填") + '</span></div>' +
-    '<div class="kv-row"><span class="k">電話</span><span class="v">' + esc(b.phone || "未填") + '</span></div>';
+    '<div class="kv-row"><span class="k">電話</span><span class="v">' + esc(b.phone || "未填") + '</span></div>' +
+    '<div class="kv-row"><span class="k">地址</span><span class="v">' + esc(b.address || "未填") + '</span></div>';
 
-  document.getElementById("resumeSummaryView").textContent = r.summary || "尚未填寫自我介紹";
+  document.getElementById("resumeSummaryView").innerHTML = r.summary ? formatFreeText(r.summary) : "尚未填寫自我介紹";
 
   const exps = Object.entries(r.experience || {}).sort(function (a, b2) { return (b2[1].order || 0) - (a[1].order || 0); });
   document.getElementById("resumeExpView").innerHTML = exps.length ? exps.map(function (entry) {
@@ -1222,7 +1356,7 @@ function renderResume() {
     return '<div class="resume-exp-item"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
       '<div><strong>' + esc(e.title) + '</strong><div class="card-sub">' + esc(e.company) + ' · ' + esc(e.period) + '</div></div>' +
       '<div class="card-actions"><button class="icon-btn" data-edit-exp="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-exp="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
-      '</div><div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;white-space:pre-wrap;">' + esc(e.desc) + '</div></div>';
+      '</div><div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">' + formatFreeText(e.desc) + '</div></div>';
   }).join("") : '<div class="empty-note">尚未新增工作經歷</div>';
 
   document.getElementById("resumeExpView").querySelectorAll("[data-edit-exp]").forEach(function (btn) { btn.onclick = function () { openExpModal(this.getAttribute("data-edit-exp")); }; });
@@ -1233,15 +1367,56 @@ function renderResume() {
     };
   });
 
+  const edus = Object.entries(r.education || {}).sort(function (a, b2) { return (b2[1].order || 0) - (a[1].order || 0); });
+  document.getElementById("resumeEduView").innerHTML = edus.length ? edus.map(function (entry) {
+    const id = entry[0], ed = entry[1];
+    return '<div class="resume-exp-item"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+      '<div><strong>' + esc(ed.school) + '</strong><div class="card-sub">' + esc(ed.department) + '</div></div>' +
+      '<div class="card-actions"><button class="icon-btn" data-edit-edu="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-edu="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
+      '</div>' + (ed.notes ? '<div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">' + formatFreeText(ed.notes) + '</div>' : "") + '</div>';
+  }).join("") : '<div class="empty-note">尚未新增學歷</div>';
+
+  document.getElementById("resumeEduView").querySelectorAll("[data-edit-edu]").forEach(function (btn) { btn.onclick = function () { openEduModal(this.getAttribute("data-edit-edu")); }; });
+  document.getElementById("resumeEduView").querySelectorAll("[data-del-edu]").forEach(function (btn) {
+    btn.onclick = function () {
+      const id = this.getAttribute("data-del-edu");
+      openConfirm("確定要刪除這筆學歷嗎？", function () { delete activeResume().education[id]; persist(); toast("已刪除"); });
+    };
+  });
+
   const skills = Object.entries(r.skills || {});
   document.getElementById("resumeSkillsView").innerHTML = skills.length ? skills.map(function (entry) {
     const id = entry[0], s = entry[1];
-    return '<span class="tag" style="display:inline-flex;align-items:center;gap:6px;">' + esc(s.name) + '<span data-del-skill="' + id + '" style="cursor:pointer;color:var(--accent-red);">' + fi("x", 11) + '</span></span>';
+    return '<li style="display:flex;justify-content:space-between;align-items:center;gap:8px;">' +
+      '<span style="display:flex;align-items:center;gap:7px;"><span class="bullet-mark">•</span><span class="bullet-text">' + esc(s.name) + '</span></span>' +
+      '<span data-del-skill="' + id + '" style="cursor:pointer;color:var(--accent-red);flex-shrink:0;">' + fi("x", 13) + '</span></li>';
   }).join("") : '<div class="empty-note">尚未新增技能</div>';
   document.getElementById("resumeSkillsView").querySelectorAll("[data-del-skill]").forEach(function (el) {
     el.onclick = function () { delete activeResume().skills[this.getAttribute("data-del-skill")]; persist(); toast("已刪除技能"); };
   });
+
+  const refs = Object.entries(r.references || {}).sort(function (a, b2) { return (b2[1].order || 0) - (a[1].order || 0); });
+  document.getElementById("resumeRefView").innerHTML = refs.length ? refs.map(function (entry) {
+    const id = entry[0], rf = entry[1];
+    return '<div class="resume-exp-item"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+      '<div><strong>' + esc(rf.name) + '</strong><div class="card-sub">' + [esc(rf.company), esc(rf.title)].filter(Boolean).join(" · ") + '</div>' +
+      '<div style="font-size:12.5px;color:var(--text-muted);margin-top:4px;">' + [rf.phone ? "Phone: " + esc(rf.phone) : "", rf.email ? "Email: " + esc(rf.email) : ""].filter(Boolean).join(" ・ ") + '</div></div>' +
+      '<div class="card-actions"><button class="icon-btn" data-edit-ref="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-ref="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
+      '</div></div>';
+  }).join("") : '<div class="empty-note">尚未新增推薦人</div>';
+
+  document.getElementById("resumeRefView").querySelectorAll("[data-edit-ref]").forEach(function (btn) { btn.onclick = function () { openRefModal(this.getAttribute("data-edit-ref")); }; });
+  document.getElementById("resumeRefView").querySelectorAll("[data-del-ref]").forEach(function (btn) {
+    btn.onclick = function () {
+      const id = this.getAttribute("data-del-ref");
+      openConfirm("確定要刪除這位推薦人嗎？", function () { delete activeResume().references[id]; persist(); toast("已刪除"); });
+    };
+  });
 }
+
+document.getElementById("toggleVersionManageBtn").onclick = function () {
+  document.getElementById("versionManageRow").classList.toggle("open");
+};
 
 document.getElementById("resumeVersionSelect").onchange = function () {
   state.activeResumeVersion = this.value;
@@ -1295,6 +1470,7 @@ document.getElementById("editResumeBtn").onclick = function () {
     '<div class="form-field"><label>目標產業</label><input class="input" id="fResIndustry" value="' + esc(b.targetIndustry) + '"></div>' +
     '<div class="form-field"><label>Email</label><input class="input" id="fResEmail" value="' + esc(b.email) + '"></div>' +
     '<div class="form-field"><label>電話</label><input class="input" id="fResPhone" value="' + esc(b.phone) + '"></div>' +
+    '<div class="form-field"><label>地址</label><input class="input" id="fResAddress" value="' + esc(b.address) + '"></div>' +
     '</div><div class="form-field full"><label>自我介紹</label><textarea class="textarea" id="fResSummary" style="min-height:120px;">' + esc(r.summary) + '</textarea></div>';
   openModal("編輯履歷基本資料", body, [
     { label: "取消", cls: "btn-secondary", onClick: closeModal },
@@ -1305,7 +1481,8 @@ document.getElementById("editResumeBtn").onclick = function () {
         targetRole: document.getElementById("fResRole").value.trim(),
         targetIndustry: document.getElementById("fResIndustry").value.trim(),
         email: document.getElementById("fResEmail").value.trim(),
-        phone: document.getElementById("fResPhone").value.trim()
+        phone: document.getElementById("fResPhone").value.trim(),
+        address: document.getElementById("fResAddress").value.trim()
       };
       r2.summary = document.getElementById("fResSummary").value.trim();
       persist(); closeModal(); toast("履歷已更新");
@@ -1339,18 +1516,74 @@ function openExpModal(id) {
 }
 document.getElementById("addExpBtn").onclick = function () { openExpModal(null); };
 
+function openEduModal(id) {
+  const ed = id ? activeResume().education[id] : { school: "", department: "", notes: "" };
+  const body =
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>學校</label><input class="input" id="fEduSchool" value="' + esc(ed.school) + '"></div>' +
+    '<div class="form-field"><label>科系 / 學程</label><input class="input" id="fEduDept" value="' + esc(ed.department) + '"></div>' +
+    '</div><div class="form-field"><label>備註（可換行列點）</label><textarea class="textarea" id="fEduNotes" style="min-height:80px;">' + esc(ed.notes) + '</textarea></div>';
+  openModal(id ? "編輯學歷" : "新增學歷", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const school = document.getElementById("fEduSchool").value.trim();
+      if (!school) { toast("請輸入學校名稱", "error"); return; }
+      const r = activeResume();
+      r.education[id || uid()] = {
+        school: school,
+        department: document.getElementById("fEduDept").value.trim(),
+        notes: document.getElementById("fEduNotes").value.trim(),
+        order: (id && r.education[id]) ? r.education[id].order : Date.now()
+      };
+      persist(); closeModal(); toast("學歷已儲存");
+    }}
+  ]);
+}
+document.getElementById("addEduBtn").onclick = function () { openEduModal(null); };
+
 document.getElementById("addSkillBtn").onclick = function () {
-  const body = '<div class="form-field"><label>技能 / 證照名稱</label><input class="input" id="fSkillName" placeholder="例：Excel VBA、CFA Level 1、Power BI"></div>';
+  const body = '<div class="form-field"><label>技能 / 證照名稱（可一次輸入多項，每行一項）</label><textarea class="textarea" id="fSkillNames" placeholder="例：\nTOEIC 805分\n軟體：Excel精通、Visio精通\n會計與審計專業知識" style="min-height:100px;"></textarea></div>';
   openModal("新增技能／證照", body, [
     { label: "取消", cls: "btn-secondary", onClick: closeModal },
     { label: "新增", cls: "btn-primary", icon: "check", onClick: function () {
-      const name = document.getElementById("fSkillName").value.trim();
-      if (!name) { toast("請輸入名稱", "error"); return; }
-      activeResume().skills[uid()] = { name: name };
-      persist(); closeModal(); toast("技能已新增");
+      const names = splitLines(document.getElementById("fSkillNames").value);
+      if (!names.length) { toast("請輸入至少一項", "error"); return; }
+      const r = activeResume();
+      names.forEach(function (name) { r.skills[uid()] = { name: name }; });
+      persist(); closeModal(); toast("已新增 " + names.length + " 項技能");
     }}
   ]);
 };
+
+function openRefModal(id) {
+  const rf = id ? activeResume().references[id] : { name: "", title: "", company: "", phone: "", email: "" };
+  const body =
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>姓名</label><input class="input" id="fRefName" value="' + esc(rf.name) + '"></div>' +
+    '<div class="form-field"><label>職稱</label><input class="input" id="fRefTitle" value="' + esc(rf.title) + '"></div>' +
+    '<div class="form-field"><label>公司 / 事務所</label><input class="input" id="fRefCompany" value="' + esc(rf.company) + '"></div>' +
+    '<div class="form-field"><label>電話</label><input class="input" id="fRefPhone" value="' + esc(rf.phone) + '"></div>' +
+    '<div class="form-field"><label>Email</label><input class="input" id="fRefEmail" value="' + esc(rf.email) + '"></div>' +
+    '</div>';
+  openModal(id ? "編輯推薦人" : "新增推薦人", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const name = document.getElementById("fRefName").value.trim();
+      if (!name) { toast("請輸入姓名", "error"); return; }
+      const r = activeResume();
+      r.references[id || uid()] = {
+        name: name,
+        title: document.getElementById("fRefTitle").value.trim(),
+        company: document.getElementById("fRefCompany").value.trim(),
+        phone: document.getElementById("fRefPhone").value.trim(),
+        email: document.getElementById("fRefEmail").value.trim(),
+        order: (id && r.references[id]) ? r.references[id].order : Date.now()
+      };
+      persist(); closeModal(); toast("推薦人已儲存");
+    }}
+  ]);
+}
+document.getElementById("addRefBtn").onclick = function () { openRefModal(null); };
 
 /* ============================================================
    PDF 匯入履歷（實驗性：關鍵字啟發式拆解，需人工校對）
@@ -1532,11 +1765,39 @@ function confirmPdfImport() {
 /* ============================================================
    履歷匯出 PDF（開新視窗走瀏覽器列印 → 另存為 PDF）
    ============================================================ */
-document.getElementById("exportResumePdfBtn").onclick = function () {
+function buildResumeExportData() {
   const r = activeResume();
   const b = r.basic || {};
   const exps = Object.values(r.experience || {}).sort(function (a, b2) { return (b2.order || 0) - (a.order || 0); });
+  const edus = Object.values(r.education || {}).sort(function (a, b2) { return (b2.order || 0) - (a.order || 0); });
   const skills = Object.values(r.skills || {});
+  const refs = Object.values(r.references || {}).sort(function (a, b2) { return (b2.order || 0) - (a.order || 0); });
+  return { r: r, b: b, exps: exps, edus: edus, skills: skills, refs: refs };
+}
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+function stripBullet(line) { return line.replace(BULLET_RE, ""); }
+
+/* ---- 匯出選單開合 ---- */
+document.getElementById("exportResumeBtn").onclick = function (e) {
+  e.stopPropagation();
+  const menu = document.getElementById("exportResumeMenu");
+  const wasOpen = menu.classList.contains("open");
+  closeAllMoreMenus();
+  if (!wasOpen) menu.classList.add("open");
+};
+
+/* ---- 匯出 PDF（開新視窗走瀏覽器列印 → 另存為 PDF） ---- */
+document.getElementById("exportPdfBtn").onclick = function () {
+  closeAllMoreMenus();
+  const d = buildResumeExportData();
+  const r = d.r, b = d.b;
   const win = window.open("", "_blank");
   if (!win) { toast("瀏覽器阻擋了新視窗，請允許彈出視窗後再試一次", "error"); return; }
   const html =
@@ -1550,24 +1811,159 @@ document.getElementById("exportResumePdfBtn").onclick = function () {
     '.exp{margin-bottom:14px;}' +
     '.exp .t{font-weight:700;font-size:13.5px;}' +
     '.exp .s{color:#666;font-size:12px;margin-bottom:4px;}' +
-    '.exp .d{font-size:12.5px;white-space:pre-wrap;}' +
-    '.skills span{display:inline-block;background:#f0f0f0;border-radius:4px;padding:3px 9px;margin:0 6px 6px 0;font-size:12px;}' +
+    '.exp .d{font-size:12.5px;}' +
+    '.exp .d ul{margin:4px 0;padding-left:18px;}' +
+    '.skills ul{margin:0;padding-left:18px;font-size:12.5px;}' +
     '.summary{font-size:12.5px;white-space:pre-wrap;}' +
     '@media print{body{margin:0;padding:20px;}}' +
     '</style></head><body>' +
     '<h1>' + esc(b.name || "（未填姓名）") + '</h1>' +
     '<div class="role">' + esc(b.targetRole || "") + (b.targetIndustry ? " ・ " + esc(b.targetIndustry) : "") + '</div>' +
-    '<div class="contact">' + [esc(b.email), esc(b.phone)].filter(Boolean).join(" ・ ") + '</div>' +
-    (r.summary ? '<h2>自我介紹</h2><div class="summary">' + esc(r.summary) + '</div>' : "") +
-    (exps.length ? '<h2>工作經歷</h2>' + exps.map(function (e) {
-      return '<div class="exp"><div class="t">' + esc(e.title) + '</div><div class="s">' + esc(e.company) + (e.period ? " ・ " + esc(e.period) : "") + '</div><div class="d">' + esc(e.desc) + '</div></div>';
+    '<div class="contact">' + [esc(b.email), esc(b.phone), esc(b.address)].filter(Boolean).join(" ・ ") + '</div>' +
+    (r.summary ? '<h2>自我介紹</h2><div class="summary">' + formatFreeText(r.summary) + '</div>' : "") +
+    (d.exps.length ? '<h2>工作經歷</h2>' + d.exps.map(function (e) {
+      return '<div class="exp"><div class="t">' + esc(e.title) + '</div><div class="s">' + esc(e.company) + (e.period ? " ・ " + esc(e.period) : "") + '</div><div class="d">' + formatFreeText(e.desc) + '</div></div>';
     }).join("") : "") +
-    (skills.length ? '<h2>技能與證照</h2><div class="skills">' + skills.map(function (s) { return '<span>' + esc(s.name) + '</span>'; }).join("") + '</div>' : "") +
+    (d.edus.length ? '<h2>學歷</h2>' + d.edus.map(function (ed) {
+      return '<div class="exp"><div class="t">' + esc(ed.school) + '</div><div class="s">' + esc(ed.department) + '</div>' + (ed.notes ? '<div class="d">' + formatFreeText(ed.notes) + '</div>' : "") + '</div>';
+    }).join("") : "") +
+    (d.skills.length ? '<h2>專長與技能</h2><div class="skills"><ul>' + d.skills.map(function (s) { return '<li>' + esc(s.name) + '</li>'; }).join("") + '</ul></div>' : "") +
+    (d.refs.length ? '<h2>推薦人</h2>' + d.refs.map(function (rf) {
+      return '<div class="exp"><div class="t">' + esc(rf.name) + '</div><div class="s">' + [esc(rf.company), esc(rf.title)].filter(Boolean).join(" ・ ") + '</div><div class="d">' + [rf.phone ? "Phone: " + esc(rf.phone) : "", rf.email ? "Email: " + esc(rf.email) : ""].filter(Boolean).join("　") + '</div></div>';
+    }).join("") : "") +
     '<script>window.onload = function () { setTimeout(function () { window.print(); }, 300); };<' + '/script>' +
     '</body></html>';
   win.document.open();
   win.document.write(html);
   win.document.close();
+};
+
+/* ---- 匯出 Word（.docx） ---- */
+document.getElementById("exportWordBtn").onclick = async function () {
+  closeAllMoreMenus();
+  if (!window.docx) { toast("Word 匯出套件載入失敗，請檢查網路連線後重新整理再試", "error"); return; }
+  try {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
+    const d = buildResumeExportData();
+    const b = d.b;
+    const children = [];
+    children.push(new Paragraph({ text: b.name || "履歷", heading: HeadingLevel.TITLE }));
+    if (b.targetRole || b.targetIndustry) children.push(new Paragraph({ text: [b.targetRole, b.targetIndustry].filter(Boolean).join(" ・ ") }));
+    if (b.email || b.phone || b.address) children.push(new Paragraph({ text: [b.email, b.phone, b.address].filter(Boolean).join(" ・ ") }));
+
+    if (d.r.summary) {
+      children.push(new Paragraph({ text: "自我介紹", heading: HeadingLevel.HEADING_2 }));
+      d.r.summary.split("\n").filter(Boolean).forEach(function (line) { children.push(new Paragraph({ text: line })); });
+    }
+    if (d.exps.length) {
+      children.push(new Paragraph({ text: "工作經歷", heading: HeadingLevel.HEADING_2 }));
+      d.exps.forEach(function (e) {
+        children.push(new Paragraph({ children: [new TextRun({ text: e.title, bold: true })] }));
+        children.push(new Paragraph({ text: [e.company, e.period].filter(Boolean).join(" ・ ") }));
+        (e.desc || "").split("\n").filter(Boolean).forEach(function (line) {
+          children.push(new Paragraph({ text: stripBullet(line), bullet: { level: 0 } }));
+        });
+      });
+    }
+    if (d.edus.length) {
+      children.push(new Paragraph({ text: "學歷", heading: HeadingLevel.HEADING_2 }));
+      d.edus.forEach(function (ed) {
+        children.push(new Paragraph({ children: [new TextRun({ text: ed.school, bold: true })] }));
+        if (ed.department) children.push(new Paragraph({ text: ed.department }));
+        (ed.notes || "").split("\n").filter(Boolean).forEach(function (line) {
+          children.push(new Paragraph({ text: stripBullet(line), bullet: { level: 0 } }));
+        });
+      });
+    }
+    if (d.skills.length) {
+      children.push(new Paragraph({ text: "專長與技能", heading: HeadingLevel.HEADING_2 }));
+      d.skills.forEach(function (s) { children.push(new Paragraph({ text: s.name, bullet: { level: 0 } })); });
+    }
+    if (d.refs.length) {
+      children.push(new Paragraph({ text: "推薦人", heading: HeadingLevel.HEADING_2 }));
+      d.refs.forEach(function (rf) {
+        children.push(new Paragraph({ children: [new TextRun({ text: rf.name, bold: true })] }));
+        children.push(new Paragraph({ text: [rf.company, rf.title].filter(Boolean).join(" ・ ") }));
+        const contact = [rf.phone ? "Phone: " + rf.phone : "", rf.email ? "Email: " + rf.email : ""].filter(Boolean).join("   ");
+        if (contact) children.push(new Paragraph({ text: contact }));
+      });
+    }
+    const doc = new Document({ sections: [{ children: children }] });
+    const blob = await Packer.toBlob(doc);
+    downloadBlob(blob, (b.name || d.r.name || "履歷") + ".docx");
+    toast("Word 檔已匯出");
+  } catch (err) {
+    console.error(err);
+    toast("Word 匯出失敗：" + err.message, "error");
+  }
+};
+
+/* ---- 匯出 PPT（.pptx） ---- */
+document.getElementById("exportPptxBtn").onclick = function () {
+  closeAllMoreMenus();
+  if (!window.PptxGenJS) { toast("PowerPoint 匯出套件載入失敗，請檢查網路連線後重新整理再試", "error"); return; }
+  try {
+    const d = buildResumeExportData();
+    const b = d.b;
+    const pptx = new PptxGenJS();
+
+    const s1 = pptx.addSlide();
+    s1.addText(b.name || "履歷", { x: 0.5, y: 0.6, fontSize: 28, bold: true });
+    if (b.targetRole || b.targetIndustry) s1.addText([b.targetRole, b.targetIndustry].filter(Boolean).join(" ・ "), { x: 0.5, y: 1.5, fontSize: 16, color: "666666" });
+    if (b.email || b.phone || b.address) s1.addText([b.email, b.phone, b.address].filter(Boolean).join("   "), { x: 0.5, y: 2.0, fontSize: 12, color: "888888" });
+
+    if (d.r.summary) {
+      const s = pptx.addSlide();
+      s.addText("自我介紹", { x: 0.4, y: 0.3, fontSize: 20, bold: true });
+      s.addText(d.r.summary, { x: 0.4, y: 1.0, w: 9, h: 4.5, fontSize: 14 });
+    }
+    if (d.exps.length) {
+      const s = pptx.addSlide();
+      s.addText("工作經歷", { x: 0.4, y: 0.3, fontSize: 20, bold: true });
+      const body = [];
+      d.exps.forEach(function (e) {
+        body.push({ text: [e.title, e.company, e.period].filter(Boolean).join("　"), options: { bold: true, breakLine: true } });
+        (e.desc || "").split("\n").filter(Boolean).forEach(function (line) {
+          body.push({ text: stripBullet(line), options: { bullet: true, indentLevel: 1, breakLine: true } });
+        });
+      });
+      s.addText(body, { x: 0.4, y: 1.0, w: 9, h: 4.8, fontSize: 12 });
+    }
+    if (d.edus.length) {
+      const s = pptx.addSlide();
+      s.addText("學歷", { x: 0.4, y: 0.3, fontSize: 20, bold: true });
+      const body = [];
+      d.edus.forEach(function (ed) {
+        body.push({ text: [ed.school, ed.department].filter(Boolean).join("　"), options: { bold: true, breakLine: true } });
+        (ed.notes || "").split("\n").filter(Boolean).forEach(function (line) {
+          body.push({ text: stripBullet(line), options: { bullet: true, indentLevel: 1, breakLine: true } });
+        });
+      });
+      s.addText(body, { x: 0.4, y: 1.0, w: 9, h: 4.8, fontSize: 12 });
+    }
+    if (d.skills.length) {
+      const s = pptx.addSlide();
+      s.addText("專長與技能", { x: 0.4, y: 0.3, fontSize: 20, bold: true });
+      const body = d.skills.map(function (sk) { return { text: sk.name, options: { bullet: true, breakLine: true } }; });
+      s.addText(body, { x: 0.4, y: 1.0, w: 9, h: 4.8, fontSize: 14 });
+    }
+    if (d.refs.length) {
+      const s = pptx.addSlide();
+      s.addText("推薦人", { x: 0.4, y: 0.3, fontSize: 20, bold: true });
+      const body = [];
+      d.refs.forEach(function (rf) {
+        body.push({ text: [rf.name, rf.company, rf.title].filter(Boolean).join("　"), options: { bold: true, breakLine: true } });
+        const contact = [rf.phone ? "Phone: " + rf.phone : "", rf.email ? "Email: " + rf.email : ""].filter(Boolean).join("   ");
+        if (contact) body.push({ text: contact, options: { breakLine: true } });
+      });
+      s.addText(body, { x: 0.4, y: 1.0, w: 9, h: 4.8, fontSize: 12 });
+    }
+    pptx.writeFile({ fileName: (b.name || d.r.name || "履歷") + ".pptx" });
+    toast("PowerPoint 檔已匯出");
+  } catch (err) {
+    console.error(err);
+    toast("PowerPoint 匯出失敗：" + err.message, "error");
+  }
 };
 
 /* ============================================================
@@ -1578,6 +1974,7 @@ const learnStatusMeta = {
   in_progress: { label: "學習中", cls: "blue" },
   done: { label: "已學會", cls: "teal" }
 };
+const expandedLearnLogIds = new Set();
 function closeAllMoreMenus() {
   document.querySelectorAll(".more-menu.open").forEach(function (m) { m.classList.remove("open"); });
 }
@@ -1603,11 +2000,13 @@ function renderLearning() {
         const id = entry[0], l = entry[1];
         const progress = l.progress || 0;
         const curStatus = l.status || "not_started";
+        const statusCls = (learnStatusMeta[curStatus] || learnStatusMeta.not_started).cls;
         const logs = (l.logs || []).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+        const logsExpanded = expandedLearnLogIds.has(id);
         return '<div class="card">' +
           '<div class="card-top"><div><div class="card-title title-accent">' + esc(l.name) + '</div><div class="card-sub">' + esc(l.category || "") + '</div></div>' +
           '<div style="display:flex;align-items:center;gap:6px;">' +
-          '<select class="status-mini-select learn-status-select" data-id="' + id + '">' +
+          '<select class="status-mini-select learn-status-select st-' + statusCls + '" data-id="' + id + '">' +
           Object.keys(learnStatusMeta).map(function (k) { return '<option value="' + k + '"' + (curStatus === k ? " selected" : "") + '>' + learnStatusMeta[k].label + '</option>'; }).join("") +
           '</select>' +
           '<div class="more-menu-wrap">' +
@@ -1617,12 +2016,17 @@ function renderLearning() {
           '<button class="danger" data-del-learn="' + id + '">' + fi("trash-2", 14) + '刪除</button>' +
           '</div></div>' +
           '</div></div>' +
-          (l.targetDate ? '<div class="card-meta-row">' + fi("calendar", 13) + '<span>目標日期 ' + fmtDate(l.targetDate) + '</span></div>' : "") +
-          (l.resourceUrl ? '<a class="card-link" href="' + esc(l.resourceUrl) + '" target="_blank" rel="noopener">' + fi("external-link", 13) + '學習資源</a>' : "") +
-          (l.notes ? '<div class="card-notes">' + nl2br(l.notes) + '</div>' : "") +
           '<div class="progress-row"><input type="range" min="0" max="100" step="5" value="' + progress + '" class="learn-progress-slider" data-id="' + id + '" style="background:linear-gradient(to right, var(--graphite) ' + progress + '%, var(--border) ' + progress + '%);"><span class="progress-pct" data-pct="' + id + '">' + progress + '%</span></div>' +
-          '<button class="btn btn-secondary btn-sm" data-add-log="' + id + '" style="align-self:flex-start;">' + fi("plus", 13) + '新增學習紀錄</button>' +
-          (logs.length ? '<div class="learn-log-list">' + logs.map(function (lg) {
+          '<div class="learn-log-actions">' +
+          '<button class="btn btn-secondary btn-sm" data-add-log="' + id + '">' + fi("plus", 13) + '新增學習紀錄</button>' +
+          (logs.length ? '<button class="btn btn-ghost btn-sm" data-toggle-logs="' + id + '">' + fi(logsExpanded ? "chevron-up" : "chevron-down", 13) + (logsExpanded ? "收合" : "顯示") + '紀錄（' + logs.length + '）</button>' : "") +
+          '</div>' +
+          ((l.targetDate || l.resourceUrl || l.notes) ? '<div class="learn-meta">' +
+            (l.targetDate ? '<div class="card-meta-row">' + fi("calendar", 13) + '<span>目標日期 ' + fmtDate(l.targetDate) + '</span></div>' : "") +
+            (l.resourceUrl ? '<a class="card-link" href="' + esc(l.resourceUrl) + '" target="_blank" rel="noopener">' + fi("external-link", 13) + '學習資源</a>' : "") +
+            (l.notes ? '<div><div class="card-desc-label">備註</div><div class="card-notes" style="margin-top:0;">' + nl2br(l.notes) + '</div></div>' : "") +
+            '</div>' : "") +
+          (logs.length && logsExpanded ? '<div class="learn-log-list">' + logs.map(function (lg) {
             return '<div class="learn-log-item"><span class="learn-log-date">' + fmtDate(lg.date) + '</span><span class="learn-log-note">' + nl2br(lg.note) + '</span></div>';
           }).join("") + '</div>' : "") +
           '</div>';
@@ -1667,6 +2071,13 @@ function renderLearning() {
     });
   });
   container.querySelectorAll("[data-add-log]").forEach(function (b) { b.onclick = function () { openLearnLogModal(this.getAttribute("data-add-log")); }; });
+  container.querySelectorAll("[data-toggle-logs]").forEach(function (b) {
+    b.onclick = function () {
+      const id = this.getAttribute("data-toggle-logs");
+      if (expandedLearnLogIds.has(id)) expandedLearnLogIds.delete(id); else expandedLearnLogIds.add(id);
+      renderLearning();
+    };
+  });
 }
 function openLearnModal(id) {
   const l = id ? state.learning[id] : { name: "", category: "", status: "not_started", resourceUrl: "", targetDate: "", notes: "", progress: 0, logs: [] };
@@ -1955,21 +2366,32 @@ document.getElementById("addEventBtn").onclick = function () { openEventModal(nu
    ============================================================ */
 function renderInterviews() {
   const list = document.getElementById("interviewsList");
-  const entries = Object.entries(state.interviews).sort(function (a, b) { return new Date(b[1].date) - new Date(a[1].date); });
+  const entries = Object.entries(state.interviews).sort(function (a, b) { return new Date(a[1].date) - new Date(b[1].date); });
   if (!entries.length) { list.innerHTML = '<div class="empty-note">尚無面試紀錄，點擊「新增面試紀錄」開始準備</div>'; return; }
+  const resultMeta = { pending: { cls: "gray", label: "結果未知" }, passed: { cls: "teal", label: "通過" }, failed: { cls: "red", label: "未通過" } };
   list.innerHTML = entries.map(function (entry) {
     const id = entry[0], iv = entry[1];
     const prep = iv.prepItems || [];
     const doneCount = prep.filter(function (p) { return p.done; }).length;
+    const curResult = iv.result || "pending";
+    const rMeta = resultMeta[curResult] || resultMeta.pending;
+    const linkedJob = iv.jobId && state.jobs[iv.jobId] ? state.jobs[iv.jobId] : null;
     return '<div class="interview-card">' +
-      '<div class="card-top"><div><div class="card-title">' + esc(iv.company) + ' － ' + esc(iv.position) + '</div><div class="card-sub">' + fmtDate(iv.date) + (iv.round ? " · " + esc(iv.round) : "") + '</div></div>' +
-      '<div class="card-actions"><button class="icon-btn" data-edit-iv="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-iv="' + id + '">' + fi("trash-2", 14) + '</button></div></div>' +
-      (iv.result ? '<span class="badge ' + ({ pending: "gray", passed: "teal", failed: "red" }[iv.result]) + '">' + ({ pending: "結果未知", passed: "通過", failed: "未通過" }[iv.result]) + '</span>' : "") +
-      '<div class="progress-bar-track" style="margin-top:8px;"><div class="progress-bar-fill" style="width:' + (prep.length ? Math.round(doneCount / prep.length * 100) : 0) + '%"></div></div>' +
-      '<ul class="prep-list">' + prep.map(function (p, idx) {
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
+      '<div><div class="card-title title-accent">' + esc(iv.position) + '</div><div class="iv-subline">' + esc(iv.company) + '</div></div>' +
+      '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">' +
+      (iv.round ? '<span class="badge gray">' + esc(iv.round) + '</span>' : "") +
+      '<select class="status-mini-select interview-result-select st-' + rMeta.cls + '" data-id="' + id + '">' +
+      Object.keys(resultMeta).map(function (k) { return '<option value="' + k + '"' + (curResult === k ? " selected" : "") + '>' + resultMeta[k].label + '</option>'; }).join("") +
+      '</select>' +
+      '<div class="card-actions"><button class="icon-btn" data-edit-iv="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-iv="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
+      '</div></div>' +
+      '<div class="iv-subline">' + fi("calendar", 13) + '<span>' + fmtDate(iv.date) + '</span></div>' +
+      (linkedJob ? '<div class="card-link" data-goto-job="' + iv.jobId + '" style="cursor:pointer;">' + fi("briefcase", 13) + '<span>關聯職缺：' + esc(linkedJob.title) + '</span></div>' : "") +
+      (prep.length ? '<div><div class="card-desc-label">準備項目（' + doneCount + '/' + prep.length + '）</div><ul class="prep-list card-notes">' + prep.map(function (p, idx) {
         return '<li class="prep-item' + (p.done ? " done" : "") + '"><input type="checkbox" data-iv="' + id + '" data-idx="' + idx + '" ' + (p.done ? "checked" : "") + '><span>' + esc(p.text) + '</span></li>';
-      }).join("") + '</ul>' +
-      (iv.notes ? '<div class="card-notes" style="margin-top:8px;">' + esc(iv.notes) + '</div>' : "") +
+      }).join("") + '</ul></div>' : "") +
+      (iv.notes ? '<div><div class="card-desc-label">面試筆記</div><div class="card-notes" style="margin-top:0;">' + formatFreeText(iv.notes) + '</div></div>' : "") +
       '</div>';
   }).join("");
 
@@ -1980,6 +2402,16 @@ function renderInterviews() {
       persist();
     };
   });
+  list.querySelectorAll(".interview-result-select").forEach(function (sel) {
+    sel.onchange = function () {
+      state.interviews[this.getAttribute("data-id")].result = this.value;
+      persist();
+      renderInterviews();
+    };
+  });
+  list.querySelectorAll("[data-goto-job]").forEach(function (el) {
+    el.onclick = function () { goToJob(this.getAttribute("data-goto-job")); };
+  });
   list.querySelectorAll("[data-edit-iv]").forEach(function (b) { b.onclick = function () { openInterviewModal(this.getAttribute("data-edit-iv")); }; });
   list.querySelectorAll("[data-del-iv]").forEach(function (b) {
     b.onclick = function () {
@@ -1988,11 +2420,35 @@ function renderInterviews() {
     };
   });
 }
+function goToJob(jobId) {
+  if (!jobId || !state.jobs[jobId]) { toast("找不到該職缺，可能已被刪除", "error"); return; }
+  document.getElementById("jobStatusFilter").value = "";
+  document.getElementById("jobCategoryFilter").value = "";
+  document.querySelectorAll(".nav-link").forEach(function (l) { l.classList.remove("active"); });
+  const jobsNavLink = document.querySelector('.nav-link[data-page="jobs"]');
+  if (jobsNavLink) jobsNavLink.classList.add("active");
+  document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
+  document.getElementById("page-jobs").classList.add("active");
+  document.getElementById("pageTitle").textContent = pageTitles.jobs[0];
+  document.getElementById("pageSubtitle").textContent = pageTitles.jobs[1];
+  expandedJobIds.add(jobId);
+  renderJobs();
+  closeSidebarMobile();
+  setTimeout(function () {
+    const el = document.getElementById("job-card-" + jobId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("job-highlight");
+      setTimeout(function () { el.classList.remove("job-highlight"); }, 1600);
+    }
+  }, 30);
+}
 
 function openInterviewModal(id) {
-  const iv = id ? state.interviews[id] : { company: "", position: "", round: "", date: new Date().toISOString().slice(0, 10), result: "pending", notes: "", prepItems: [] };
+  const iv = id ? state.interviews[id] : { company: "", position: "", round: "", date: new Date().toISOString().slice(0, 10), result: "pending", notes: "", prepItems: [], jobId: "" };
   const prepText = (iv.prepItems || []).map(function (p) { return p.text; }).join("\n");
   const body =
+    '<div class="form-field"><label>從職缺追蹤選擇（選填，會自動帶入公司與職務）</label><select class="select" id="fIvJob">' + jobLinkOptions(iv.jobId) + '</select></div>' +
     '<div class="form-grid">' +
     '<div class="form-field"><label>公司名稱</label><input class="input" id="fIvCompany" value="' + esc(iv.company) + '"></div>' +
     '<div class="form-field"><label>應徵職務</label><input class="input" id="fIvPosition" value="' + esc(iv.position) + '"></div>' +
@@ -2023,11 +2479,19 @@ function openInterviewModal(id) {
         date: document.getElementById("fIvDate").value,
         result: document.getElementById("fIvResult").value,
         notes: document.getElementById("fIvNotes").value.trim(),
-        prepItems: newPrep
+        prepItems: newPrep,
+        jobId: document.getElementById("fIvJob").value
       };
       persist(); closeModal(); toast(id ? "面試紀錄已更新" : "面試紀錄已新增");
     }}
   ]);
+  document.getElementById("fIvJob").onchange = function () {
+    const j = state.jobs[this.value];
+    if (j) {
+      if (!document.getElementById("fIvCompany").value.trim()) document.getElementById("fIvCompany").value = j.company || "";
+      if (!document.getElementById("fIvPosition").value.trim()) document.getElementById("fIvPosition").value = j.title || "";
+    }
+  };
 }
 document.getElementById("addInterviewBtn").onclick = function () { openInterviewModal(null); };
 
