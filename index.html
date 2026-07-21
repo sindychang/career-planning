@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>職涯轉職規劃</title>
+<link rel="icon" href="data:,">
+<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --graphite:#3F4750;
+  --graphite-dark:#2C3238;
+  --graphite-light:#5C656F;
+  --cream-bg:#F3EEE4;
+  --card-bg:#FBF8F1;
+  --card-bg-2:#F7F2E8;
+  --border:#E3DCCB;
+  --border-strong:#D3C9B0;
+  --text:#2C2A24;
+  --text-muted:#8B8478;
+  --text-faint:#B0A996;
+  --accent-teal:#0D8A7E;
+  --accent-teal-bg:#E1EFEC;
+  --accent-amber:#B5651D;
+  --accent-amber-bg:#F3E6D8;
+  --accent-red:#B3453C;
+  --accent-red-bg:#F4E1DE;
+  --accent-blue:#3D6B8C;
+  --accent-blue-bg:#E3EBF0;
+  --accent-purple:#6B5B8E;
+  --accent-purple-bg:#E9E5F1;
+  --title-accent:#9C5B3C;
+  --sync-green:#4C8C63;
+  --sync-yellow:#C99A3B;
+  --sync-red:#B3453C;
+  --radius:10px;
+  --radius-sm:6px;
+  --shadow:0 1px 3px rgba(44,40,36,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;
+  background:var(--cream-bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  font-size:14px;
+  line-height:1.6;
+}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:230px;
+  flex-shrink:0;
+  background:var(--graphite-dark);
+  color:#EDEAE1;
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  top:0;left:0;bottom:0;
+  z-index:40;
+  transition:transform .2s ease;
+}
+.sidebar-brand{
+  padding:20px 18px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.sidebar-brand .logo-badge{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--accent-amber);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:14px;flex-shrink:0;
+}
+.sidebar-brand-text{font-size:15px;font-weight:600;color:#fff;}
+.sidebar-brand-sub{font-size:11px;color:#A8A395;margin-top:1px;}
+.nav-list{list-style:none;padding:14px 10px;flex:1;overflow-y:auto;}
+.nav-item{margin-bottom:2px;}
+.nav-link{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 12px;border-radius:var(--radius-sm);
+  color:#C9C4B7;text-decoration:none;cursor:pointer;
+  font-size:13.5px;font-weight:500;
+  transition:background .12s,color .12s;
+  user-select:none;
+}
+.nav-link svg{width:17px;height:17px;flex-shrink:0;}
+.nav-link:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.nav-link.active{background:var(--accent-amber);color:#fff;}
+.sidebar-foot{
+  padding:14px 18px 18px;border-top:1px solid rgba(255,255,255,0.08);
+  font-size:11.5px;color:#9C9789;
+}
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0;}
+.sync-dot.green{background:var(--sync-green);box-shadow:0 0 0 3px rgba(76,140,99,0.25);}
+.sync-dot.yellow{background:var(--sync-yellow);box-shadow:0 0 0 3px rgba(201,154,59,0.25);}
+.sync-dot.red{background:var(--sync-red);box-shadow:0 0 0 3px rgba(179,69,60,0.25);}
+.sidebar-foot-row{display:flex;align-items:center;margin-bottom:4px;}
+
+/* ---------- Main ---------- */
+.main{
+  margin-left:230px;
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+.topbar{
+  background:var(--card-bg);
+  border-bottom:1px solid var(--border);
+  padding:14px 26px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:20;
+  gap:12px;
+}
+.topbar-title{font-size:19px;font-weight:600;color:var(--graphite-dark);}
+.topbar-title-sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.sync-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--card-bg-2);border:1px solid var(--border);
+  padding:6px 12px;border-radius:20px;font-size:12px;color:var(--text-muted);
+}
+.hamburger{
+  display:none;background:none;border:none;cursor:pointer;color:var(--graphite-dark);
+  padding:6px;
+}
+.content{
+  padding:24px 26px 60px;
+  flex:1;
+}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 16px;border-radius:var(--radius-sm);
+  border:1px solid transparent;font-size:13.5px;font-weight:600;
+  cursor:pointer;transition:opacity .12s,background .12s;
+  font-family:inherit;
+}
+.btn svg{width:15px;height:15px;}
+.btn-primary{background:var(--graphite);color:#fff;}
+.btn-primary:hover{opacity:.9;}
+.btn-secondary{background:var(--card-bg-2);color:var(--text);border-color:var(--border);}
+.btn-secondary:hover{background:var(--border);}
+.btn-danger{background:var(--accent-red);color:#fff;}
+.btn-danger:hover{opacity:.9;}
+.btn-ghost{background:none;color:var(--text-muted);}
+.btn-ghost:hover{background:var(--card-bg-2);color:var(--text);}
+.btn-sm{padding:6px 11px;font-size:12.5px;}
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--card-bg);color:var(--text-muted);
+  cursor:pointer;
+}
+.icon-btn svg{width:15px;height:15px;}
+.icon-btn:hover{background:var(--card-bg-2);color:var(--text);}
+
+/* ---------- Section header ---------- */
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;flex-wrap:wrap;gap:10px;
+}
+.section-head h2{font-size:17px;font-weight:600;color:var(--graphite-dark);}
+.filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.select,.input,.textarea{
+  border:1px solid var(--border);background:var(--card-bg);
+  border-radius:var(--radius-sm);padding:8px 11px;font-size:13px;
+  color:var(--text);font-family:inherit;
+}
+.select:focus,.input:focus,.textarea:focus{outline:none;border-color:var(--graphite-light);}
+.textarea{resize:vertical;width:100%;min-height:70px;}
+
+/* ---------- Stat cards (dashboard) ---------- */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-card{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 18px;box-shadow:var(--shadow);
+}
+.stat-card .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:6px;}
+.stat-card .stat-value{font-size:24px;font-weight:700;color:var(--graphite-dark);}
+.stat-card .stat-value small{font-size:12px;font-weight:500;color:var(--text-muted);}
+
+.dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+.panel{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;box-shadow:var(--shadow);
+}
+.panel h3{font-size:14.5px;font-weight:600;margin-bottom:12px;color:var(--graphite-dark);}
+.mini-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.mini-row:last-child{border-bottom:none;}
+.mini-row-title{font-weight:500;color:var(--text);}
+.mini-row-sub{color:var(--text-muted);font-size:12px;margin-top:1px;}
+.empty-note{color:var(--text-faint);font-size:13px;text-align:center;padding:24px 0;}
+
+/* ---------- Cards grid (jobs / learning) ---------- */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+.card{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;
+}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.card-title{font-size:14.5px;font-weight:600;color:var(--graphite-dark);}
+.card-title.title-accent{font-size:16.5px;font-weight:700;color:var(--title-accent);}
+.card-sub{font-size:12px;color:var(--text-muted);}
+.card-actions{display:flex;gap:6px;flex-shrink:0;}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;
+  font-size:11.5px;font-weight:600;white-space:nowrap;
+}
+.badge.amber{background:var(--accent-amber-bg);color:var(--accent-amber);}
+.badge.teal{background:var(--accent-teal-bg);color:var(--accent-teal);}
+.badge.red{background:var(--accent-red-bg);color:var(--accent-red);}
+.badge.blue{background:var(--accent-blue-bg);color:var(--accent-blue);}
+.badge.purple{background:var(--accent-purple-bg);color:var(--accent-purple);}
+.badge.gray{background:var(--card-bg-2);color:var(--text-muted);border:1px solid var(--border);}
+.tag-list{display:flex;flex-wrap:wrap;gap:5px;}
+.tag-list.vertical{flex-direction:column;align-items:flex-start;gap:4px;}
+.tag{background:var(--card-bg-2);border:1px solid var(--border);color:var(--text);font-size:12px;padding:3px 9px;border-radius:5px;}
+.card-meta-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);}
+.card-meta-row svg{width:13px;height:13px;flex-shrink:0;}
+.card-link{color:var(--accent-blue);font-size:12.5px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+.card-link:hover{text-decoration:underline;}
+.card-notes{font-size:13px;color:var(--text);background:var(--card-bg-2);padding:8px 10px;border-radius:6px;margin-top:2px;white-space:pre-wrap;line-height:1.65;}
+.card-desc-label{font-size:11.5px;color:var(--text-muted);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.02em;}
+
+/* ---------- Progress bar ---------- */
+.progress-bar-track{background:var(--border);border-radius:20px;height:7px;overflow:hidden;}
+.progress-bar-fill{background:var(--graphite);height:100%;border-radius:20px;transition:width .3s;}
+.progress-row{display:flex;align-items:center;gap:10px;}
+.progress-row input[type=range]{
+  flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:20px;
+  outline:none;
+}
+.status-mini-select{
+  border:1px solid var(--border);background:var(--card-bg-2);color:var(--text);
+  border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;
+  font-family:inherit;cursor:pointer;flex-shrink:0;
+}
+
+/* ---------- More menu (···) ---------- */
+.more-menu-wrap{position:relative;flex-shrink:0;}
+.more-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--card-bg);color:var(--text-muted);
+  cursor:pointer;font-size:16px;font-weight:700;line-height:1;letter-spacing:1px;
+}
+.more-btn:hover{background:var(--card-bg-2);color:var(--text);}
+.more-menu{
+  display:none;position:absolute;right:0;top:calc(100% + 4px);z-index:60;
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);min-width:110px;overflow:hidden;
+}
+.more-menu.open{display:block;}
+.more-menu button{
+  display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;
+  border:none;background:none;text-align:left;font-size:12.5px;color:var(--text);
+  cursor:pointer;font-family:inherit;
+}
+.more-menu button:hover{background:var(--card-bg-2);}
+.more-menu button.danger{color:var(--accent-red);}
+.more-menu button svg{width:14px;height:14px;flex-shrink:0;}
+.progress-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--graphite);cursor:pointer;border:2px solid var(--card-bg);box-shadow:0 0 0 1px var(--border-strong);
+}
+.progress-row input[type=range]::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;background:var(--graphite);cursor:pointer;border:2px solid var(--card-bg);
+}
+.progress-pct{font-size:12px;font-weight:700;color:var(--graphite-dark);width:36px;text-align:right;flex-shrink:0;}
+
+/* ---------- Learning list ---------- */
+.learn-status-group{margin-bottom:22px;}
+.learn-status-group h3{font-size:13.5px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.03em;}
+.learn-log-list{margin-top:6px;border-top:1px solid var(--border);padding-top:6px;}
+.learn-log-item{display:flex;gap:8px;font-size:12px;padding:4px 0;color:var(--text-muted);}
+.learn-log-item .learn-log-date{flex-shrink:0;font-weight:600;color:var(--text);white-space:nowrap;}
+.learn-log-item .learn-log-note{white-space:pre-wrap;}
+
+/* ---------- Resume ---------- */
+.resume-section{margin-bottom:20px;}
+.resume-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.resume-section-head h3{font-size:14px;font-weight:600;color:var(--graphite-dark);}
+.resume-block{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+.resume-exp-item{border-left:2px solid var(--border-strong);padding:4px 0 4px 14px;margin-bottom:12px;border-radius:0;}
+.resume-exp-item:last-child{margin-bottom:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.form-field label{font-size:12px;font-weight:600;color:var(--text-muted);}
+.form-field.full{grid-column:1/-1;}
+
+/* ---------- Calendar ---------- */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-header-title{font-size:15.5px;font-weight:600;color:var(--graphite-dark);}
+.cal-nav{display:flex;gap:6px;align-items:center;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.cal-dow{font-size:11.5px;color:var(--text-muted);text-align:center;padding-bottom:6px;font-weight:600;}
+.cal-cell{
+  min-height:88px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;
+  padding:6px;font-size:11.5px;cursor:pointer;position:relative;
+}
+.cal-cell.other-month{background:var(--card-bg-2);opacity:.5;}
+.cal-cell.today{border-color:var(--graphite);border-width:1.5px;}
+.cal-cell:hover{background:var(--card-bg-2);}
+.cal-cell.drag-over{background:var(--accent-blue-bg);border-color:var(--accent-blue);border-width:1.5px;}
+.cal-date-num{font-weight:600;color:var(--text);margin-bottom:3px;}
+.cal-evt{
+  font-size:10.5px;padding:2px 5px;border-radius:4px;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  touch-action:manipulation;
+}
+.cal-evt.type-learn{background:var(--accent-blue-bg);color:var(--accent-blue);}
+.cal-evt.type-interview{background:var(--accent-red-bg);color:var(--accent-red);}
+.cal-evt.type-apply{background:var(--accent-amber-bg);color:var(--accent-amber);}
+.cal-evt.type-other{background:var(--card-bg-2);color:var(--text-muted);}
+.cal-evt.dragging-source{opacity:.35;}
+.evt-drag-ghost{
+  position:fixed;z-index:300;pointer-events:none;padding:3px 8px;border-radius:4px;
+  font-size:11px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.25);
+  background:var(--graphite);color:#fff;transform:translate(-50%,-130%);
+}
+.cal-legend{display:flex;gap:14px;margin-top:14px;flex-wrap:wrap;}
+.cal-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);}
+.cal-legend-dot{width:9px;height:9px;border-radius:3px;}
+
+/* ---------- Interviews ---------- */
+.interview-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.prep-list{list-style:none;margin-top:8px;}
+.prep-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border);}
+.prep-item:last-child{border-bottom:none;}
+.prep-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--graphite);cursor:pointer;flex-shrink:0;}
+.prep-item.done span{text-decoration:line-through;color:var(--text-faint);}
+.prep-item span{flex:1;}
+
+/* ---------- Settings ---------- */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.settings-block{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);}
+.settings-block h3{font-size:14.5px;font-weight:600;margin-bottom:12px;color:var(--graphite-dark);}
+.kv-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px;}
+.kv-row:last-child{border-bottom:none;}
+.kv-row .k{color:var(--text-muted);}
+.kv-row .v{font-weight:600;color:var(--text);font-family:monospace;font-size:12px;}
+.config-code{
+  background:var(--graphite-dark);color:#D8D3C6;font-family:monospace;font-size:11.5px;
+  padding:14px;border-radius:8px;white-space:pre-wrap;line-height:1.6;overflow-x:auto;
+}
+
+/* ---------- Toast ---------- */
+#toast-container{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--graphite-dark);color:#fff;padding:11px 18px;border-radius:8px;
+  font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.18);display:flex;align-items:center;gap:8px;
+  min-width:220px;animation:toast-in .2s ease;
+}
+.toast.success{background:var(--sync-green);}
+.toast.error{background:var(--sync-red);}
+.toast svg{width:15px;height:15px;flex-shrink:0;}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- Modal ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(44,40,36,0.45);display:none;
+  align-items:center;justify-content:center;z-index:150;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:var(--card-bg);border-radius:var(--radius);max-width:560px;width:100%;
+  max-height:88vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.2);
+}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border);}
+.modal-head h3{font-size:15.5px;font-weight:600;color:var(--graphite-dark);}
+.modal-body{padding:20px;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.modal-box.small{max-width:400px;}
+.confirm-text{font-size:13.5px;color:var(--text);line-height:1.7;}
+
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:35;display:none;}
+.sidebar-overlay.open{display:block;}
+
+@media (max-width:980px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .dash-grid{grid-template-columns:1fr;}
+  .settings-grid{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+}
+@media (max-width:760px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .hamburger{display:flex;align-items:center;justify-content:center;}
+  .content{padding:16px 14px 50px;}
+  .topbar{padding:12px 14px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .cal-cell{min-height:60px;font-size:10px;}
+  .cal-evt{display:none;}
+  .cal-cell.has-evt::after{content:'';position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--graphite);}
+}
+@media (max-width:480px){
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .cards-grid{grid-template-columns:1fr;}
+}
+
+/* ---------- Login screen ---------- */
+#loginScreen{
+  position:fixed;inset:0;background:var(--cream-bg);z-index:400;
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+#loginScreen.show{display:flex;}
+.login-box{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:32px 28px;width:100%;max-width:360px;box-shadow:var(--shadow);
+}
+.login-box .logo-badge{
+  width:44px;height:44px;border-radius:10px;background:var(--accent-amber);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;margin:0 auto 14px;
+}
+.login-box h2{font-size:16.5px;font-weight:600;color:var(--graphite-dark);text-align:center;margin-bottom:4px;}
+.login-box p{font-size:12.5px;color:var(--text-muted);text-align:center;margin-bottom:20px;}
+.login-box .form-field{margin-bottom:12px;}
+.login-error{font-size:12px;color:var(--accent-red);text-align:center;min-height:16px;margin-top:6px;}
+.login-box .btn{width:100%;justify-content:center;margin-top:6px;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="logo-badge">職</div>
+    <h2>轉職規劃 － 登入</h2>
+    <p>已啟用 Firebase 雲端同步，請輸入帳號密碼</p>
+    <div class="form-field"><label>Email</label><input class="input" type="email" id="loginEmail" style="width:100%;" autocomplete="username"></div>
+    <div class="form-field"><label>密碼</label><input class="input" type="password" id="loginPassword" style="width:100%;" autocomplete="current-password"></div>
+    <button class="btn btn-primary" id="loginSubmitBtn">登入</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-badge">職</div>
+    <div>
+      <div class="sidebar-brand-text">轉職規劃</div>
+      <div class="sidebar-brand-sub">Career Transition Planner</div>
+    </div>
+  </div>
+  <ul class="nav-list" id="navList">
+    <li class="nav-item"><a class="nav-link active" data-page="dashboard"><i data-icon="home"></i><span>儀表板</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-page="jobs"><i data-icon="briefcase"></i><span>職缺追蹤</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-page="resume"><i data-icon="file-text"></i><span>我的履歷</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-page="learning"><i data-icon="book-open"></i><span>學習進度</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-page="calendar"><i data-icon="calendar"></i><span>時程規劃</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-page="interviews"><i data-icon="message-circle"></i><span>面試紀錄</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-page="settings"><i data-icon="settings"></i><span>設定</span></a></li>
+  </ul>
+  <div class="sidebar-foot">
+    <div class="sidebar-foot-row"><span class="sync-dot" id="sidebarSyncDot"></span><span id="sidebarSyncText">同步狀態載入中</span></div>
+    <div id="sidebarSyncTime">—</div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger" id="hamburgerBtn"><i data-icon="menu"></i></button>
+      <div>
+        <div class="topbar-title" id="pageTitle">儀表板</div>
+        <div class="topbar-title-sub" id="pageSubtitle">掌握轉職進度總覽</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-pill"><span class="sync-dot" id="topSyncDot"></span><span id="topSyncText">連線中...</span></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">追蹤中職缺</div><div class="stat-value" id="statJobs">0</div></div>
+        <div class="stat-card"><div class="stat-label">學習中項目</div><div class="stat-value" id="statLearning">0</div></div>
+        <div class="stat-card"><div class="stat-label">本月安排事項</div><div class="stat-value" id="statEvents">0</div></div>
+        <div class="stat-card"><div class="stat-label">面試紀錄</div><div class="stat-value" id="statInterviews">0</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="panel">
+          <h3>近期時程</h3>
+          <div id="dashUpcoming"></div>
+        </div>
+        <div class="panel">
+          <h3>學習進度總覽</h3>
+          <div id="dashLearning"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== JOBS ===================== -->
+    <div class="page" id="page-jobs">
+      <div class="section-head">
+        <h2>職缺追蹤</h2>
+        <button class="btn btn-primary" id="addJobBtn"><i data-icon="plus"></i>新增職缺</button>
+      </div>
+      <div class="filters-row">
+        <select class="select" id="jobStatusFilter">
+          <option value="">全部狀態</option>
+          <option value="watching">觀察中</option>
+          <option value="applied">已投遞</option>
+          <option value="interviewing">面試中</option>
+          <option value="offer">已錄取</option>
+          <option value="rejected">已婉拒/未通過</option>
+        </select>
+        <select class="select" id="jobCategoryFilter">
+          <option value="">全部類別</option>
+        </select>
+      </div>
+      <div class="cards-grid" id="jobsGrid"></div>
+    </div>
+
+    <!-- ===================== RESUME ===================== -->
+    <div class="page" id="page-resume">
+      <div class="section-head">
+        <h2>我的履歷</h2>
+        <button class="btn btn-primary" id="editResumeBtn"><i data-icon="edit-2"></i>編輯履歷</button>
+      </div>
+      <div class="panel" style="margin-bottom:16px;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
+          <label style="font-size:12.5px;font-weight:600;color:var(--text-muted);">履歷版本</label>
+          <select class="select" id="resumeVersionSelect" style="min-width:160px;"></select>
+          <button class="btn btn-secondary btn-sm" id="newResumeVersionBtn"><i data-icon="plus"></i>新增版本</button>
+          <button class="btn btn-secondary btn-sm" id="renameResumeVersionBtn"><i data-icon="edit-2"></i>重新命名</button>
+          <button class="btn btn-secondary btn-sm" id="deleteResumeVersionBtn"><i data-icon="trash-2"></i>刪除版本</button>
+          <span style="flex:1;"></span>
+          <button class="btn btn-secondary btn-sm" id="importPdfBtn"><i data-icon="upload"></i>PDF 匯入（實驗性）</button>
+          <input type="file" id="pdfImportFileInput" accept="application/pdf" style="display:none;">
+          <button class="btn btn-secondary btn-sm" id="exportResumePdfBtn"><i data-icon="download"></i>預覽 / 匯出 PDF</button>
+        </div>
+      </div>
+      <div class="resume-block" style="margin-bottom:16px;">
+        <div class="resume-section-head"><h3>基本資料 / 求職目標</h3></div>
+        <div id="resumeBasicView"></div>
+      </div>
+      <div class="resume-block" style="margin-bottom:16px;">
+        <div class="resume-section-head"><h3>自我介紹</h3></div>
+        <div id="resumeSummaryView" style="font-size:13.5px;white-space:pre-wrap;color:var(--text);"></div>
+      </div>
+      <div class="resume-block" style="margin-bottom:16px;">
+        <div class="resume-section-head">
+          <h3>工作經歷</h3>
+          <button class="btn btn-secondary btn-sm" id="addExpBtn"><i data-icon="plus"></i>新增經歷</button>
+        </div>
+        <div id="resumeExpView"></div>
+      </div>
+      <div class="resume-block">
+        <div class="resume-section-head">
+          <h3>技能與證照</h3>
+          <button class="btn btn-secondary btn-sm" id="addSkillBtn"><i data-icon="plus"></i>新增技能</button>
+        </div>
+        <div class="tag-list" id="resumeSkillsView"></div>
+      </div>
+    </div>
+
+    <!-- ===================== LEARNING ===================== -->
+    <div class="page" id="page-learning">
+      <div class="section-head">
+        <h2>學習進度</h2>
+        <button class="btn btn-primary" id="addLearnBtn"><i data-icon="plus"></i>新增學習項目</button>
+      </div>
+      <div id="learningLists"></div>
+    </div>
+
+    <!-- ===================== CALENDAR ===================== -->
+    <div class="page" id="page-calendar">
+      <div class="section-head">
+        <h2>時程規劃</h2>
+        <button class="btn btn-primary" id="addEventBtn"><i data-icon="plus"></i>新增事項</button>
+      </div>
+      <div class="panel">
+        <div class="cal-header">
+          <div class="cal-header-title" id="calTitle"></div>
+          <div class="cal-nav">
+            <button class="icon-btn" id="calPrev"><i data-icon="chevron-left"></i></button>
+            <button class="btn btn-secondary btn-sm" id="calToday">今天</button>
+            <button class="icon-btn" id="calNext"><i data-icon="chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--accent-blue)"></span>學習</div>
+          <div class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--accent-red)"></span>面試</div>
+          <div class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--accent-amber)"></span>投遞履歷</div>
+          <div class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--text-muted)"></span>其他</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== INTERVIEWS ===================== -->
+    <div class="page" id="page-interviews">
+      <div class="section-head">
+        <h2>面試紀錄</h2>
+        <button class="btn btn-primary" id="addInterviewBtn"><i data-icon="plus"></i>新增面試紀錄</button>
+      </div>
+      <div id="interviewsList"></div>
+    </div>
+
+    <!-- ===================== SETTINGS ===================== -->
+    <div class="page" id="page-settings">
+      <div class="section-head"><h2>設定</h2></div>
+      <div class="settings-grid">
+        <div class="settings-block">
+          <h3>同步狀態</h3>
+          <div class="kv-row"><span class="k">目前模式</span><span class="v" id="settingsMode">—</span></div>
+          <div class="kv-row"><span class="k">連線狀態</span><span class="v" id="settingsSyncStatus">—</span></div>
+          <div class="kv-row"><span class="k">最近同步時間</span><span class="v" id="settingsSyncTime">—</span></div>
+          <div class="kv-row"><span class="k">資料筆數</span><span class="v" id="settingsDataCount">—</span></div>
+          <div class="kv-row" id="settingsAccountRow" style="display:none;"><span class="k">登入帳號</span><span class="v" id="settingsAccountEmail">—</span></div>
+          <p style="font-size:11.5px;color:var(--text-muted);margin-top:8px;line-height:1.6;">本機模式下，資料會安全保存在此瀏覽器的 localStorage，重新整理不會遺失；但僅限同一台裝置、同一個瀏覽器可見，換裝置或清除瀏覽器資料會遺失，建議定期使用下方「匯出備份」。</p>
+          <button class="btn btn-secondary btn-sm" id="logoutBtn" style="display:none;margin-top:10px;"><i data-icon="log-out"></i>登出</button>
+        </div>
+        <div class="settings-block">
+          <h3>備份與還原</h3>
+          <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px;">匯出所有資料為 JSON 檔備份，或匯入 JSON 檔還原資料。</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="exportBtn"><i data-icon="download"></i>匯出備份</button>
+            <button class="btn btn-secondary" id="importBtn"><i data-icon="upload"></i>匯入備份</button>
+            <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+          </div>
+        </div>
+        <div class="settings-block" style="grid-column:1/-1;">
+          <h3>Firebase 設定</h3>
+          <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px;">請於 index.html 中的 firebaseConfig 填入你自己的 Firebase 專案設定（Realtime Database）。</p>
+          <div class="config-code" id="firebaseConfigDisplay"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<!-- Generic Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-head">
+      <h3 id="modalTitle">標題</h3>
+      <button class="icon-btn" id="modalCloseBtn"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal-box small">
+    <div class="modal-head"><h3>確認刪除</h3></div>
+    <div class="modal-body"><p class="confirm-text" id="confirmText">確定要刪除這筆資料嗎？此動作無法復原。</p></div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" id="confirmCancelBtn">取消</button>
+      <button class="btn btn-danger" id="confirmOkBtn"><i data-icon="trash-2"></i>刪除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Firebase 設定（請替換為你自己的專案設定）
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBrTQiO6Cos3HNVE7V-S2IBn-6ufecBd-Q",
+  authDomain: "career-planning-app-9dc4a.firebaseapp.com",
+  databaseURL: "https://career-planning-app-9dc4a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "career-planning-app-9dc4a",
+  storageBucket: "career-planning-app-9dc4a.firebasestorage.app",
+  messagingSenderId: "578380909721",
+  appId: "1:578380909721:web:653a5ce7f5e5319eaf3c08",
+  measurementId: "G-TFP16N1PGY"
+};
+
+let db = null;
+let auth = null;
+let firebaseReady = false;
+let currentUser = null;
+const LOCAL_STORAGE_KEY = "career_app_data";
+
+// 檢查是否為佔位符設定（尚未填入真實 Firebase 專案資訊）
+function isFirebaseConfigPlaceholder(cfg) {
+  const values = [cfg.apiKey, cfg.authDomain, cfg.databaseURL, cfg.projectId, cfg.storageBucket, cfg.messagingSenderId, cfg.appId];
+  return values.some(function (v) { return !v || v.indexOf("YOUR_") !== -1; });
+}
+
+if (!isFirebaseConfigPlaceholder(firebaseConfig)) {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    auth = firebase.auth();
+    firebaseReady = true;
+  } catch (e) {
+    console.warn("Firebase 初始化失敗，將以本機模式運作", e);
+    firebaseReady = false;
+  }
+} else {
+  console.warn("尚未設定 Firebase（欄位仍為預設佔位符），將以瀏覽器本機儲存（localStorage）模式運作");
+}
+
+/* ============================================================
+   Feather icon helper
+   ============================================================ */
+function fi(name, size) {
+  size = size || 18;
+  if (window.feather && feather.icons[name]) {
+    return feather.icons[name].toSvg({ width: size, height: size, "stroke-width": 1.9 });
+  }
+  return "";
+}
+function renderIcons(root) {
+  (root || document).querySelectorAll("[data-icon]").forEach(function (el) {
+    el.innerHTML = fi(el.getAttribute("data-icon"), el.getAttribute("data-size") || 18);
+  });
+}
+
+/* ============================================================
+   App State
+   ============================================================ */
+const state = {
+  jobs: {},
+  learning: {},
+  events: {},
+  interviews: {},
+  resumeVersions: {},
+  activeResumeVersion: null,
+  meta: { lastSync: null }
+};
+
+/* 履歷多版本：不同職缺可能需要不同版本的履歷內容 */
+function blankResumeVersion(name) {
+  return {
+    name: name || "新履歷版本",
+    basic: { name: "", targetRole: "財務數據分析師", targetIndustry: "", email: "", phone: "" },
+    summary: "",
+    experience: {},
+    skills: {}
+  };
+}
+function ensureResumeVersions() {
+  // 相容舊資料：舊版本是單一 state.resume，遷移成第一個版本
+  if (state.resume && !Object.keys(state.resumeVersions || {}).length) {
+    const id = uid();
+    state.resumeVersions = state.resumeVersions || {};
+    state.resumeVersions[id] = Object.assign(blankResumeVersion("預設履歷"), state.resume);
+    state.activeResumeVersion = id;
+    delete state.resume;
+  }
+  if (!state.resumeVersions || !Object.keys(state.resumeVersions).length) {
+    const id = uid();
+    state.resumeVersions = {};
+    state.resumeVersions[id] = blankResumeVersion("預設履歷");
+    state.activeResumeVersion = id;
+  }
+  if (!state.activeResumeVersion || !state.resumeVersions[state.activeResumeVersion]) {
+    state.activeResumeVersion = Object.keys(state.resumeVersions)[0];
+  }
+}
+function activeResume() {
+  ensureResumeVersions();
+  return state.resumeVersions[state.activeResumeVersion];
+}
+
+let syncStatus = "yellow"; // green / yellow / red
+let currentCalDate = new Date();
+
+/* ============================================================
+   Utility
+   ============================================================ */
+function uid() { return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8); }
+function esc(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function nl2br(str) { return esc(str).replace(/\n/g, "<br>"); }
+function splitLines(str) {
+  if (!str) return [];
+  const raw = str.indexOf("\n") >= 0 ? str.split("\n") : str.split(",");
+  return raw.map(function (s) { return s.trim(); }).filter(Boolean);
+}
+function fmtDate(d) {
+  if (!d) return "";
+  const dt = new Date(d);
+  if (isNaN(dt)) return d;
+  return dt.getFullYear() + "/" + String(dt.getMonth() + 1).padStart(2, "0") + "/" + String(dt.getDate()).padStart(2, "0");
+}
+function fmtDateTime(ts) {
+  if (!ts) return "—";
+  const dt = new Date(ts);
+  return dt.getFullYear() + "/" + String(dt.getMonth() + 1).padStart(2, "0") + "/" + String(dt.getDate()).padStart(2, "0") + " " +
+    String(dt.getHours()).padStart(2, "0") + ":" + String(dt.getMinutes()).padStart(2, "0");
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+function toast(msg, type) {
+  const container = document.getElementById("toast-container");
+  const el = document.createElement("div");
+  el.className = "toast" + (type ? " " + type : "");
+  el.innerHTML = fi(type === "error" ? "alert-circle" : "check-circle", 15) + "<span>" + esc(msg) + "</span>";
+  container.appendChild(el);
+  setTimeout(function () {
+    el.style.transition = "opacity .3s";
+    el.style.opacity = "0";
+    setTimeout(function () { el.remove(); }, 300);
+  }, 2600);
+}
+
+/* ============================================================
+   Modal helpers
+   ============================================================ */
+function openModal(title, bodyHtml, footButtons) {
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalBody").innerHTML = bodyHtml;
+  const foot = document.getElementById("modalFoot");
+  foot.innerHTML = "";
+  (footButtons || []).forEach(function (b) {
+    const btn = document.createElement("button");
+    btn.className = "btn " + (b.cls || "btn-secondary");
+    btn.innerHTML = b.icon ? fi(b.icon, 15) + b.label : b.label;
+    btn.onclick = b.onClick;
+    foot.appendChild(btn);
+  });
+  document.getElementById("modalOverlay").classList.add("open");
+  renderIcons(document.getElementById("modalBody"));
+}
+function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); }
+document.getElementById("modalCloseBtn").onclick = closeModal;
+document.getElementById("modalOverlay").addEventListener("click", function (e) {
+  if (e.target === this) closeModal();
+});
+
+let confirmCallback = null;
+function openConfirm(text, onOk) {
+  document.getElementById("confirmText").textContent = text;
+  confirmCallback = onOk;
+  document.getElementById("confirmOverlay").classList.add("open");
+}
+document.getElementById("confirmCancelBtn").onclick = function () {
+  document.getElementById("confirmOverlay").classList.remove("open");
+};
+document.getElementById("confirmOkBtn").onclick = function () {
+  document.getElementById("confirmOverlay").classList.remove("open");
+  if (confirmCallback) confirmCallback();
+};
+document.getElementById("confirmOverlay").addEventListener("click", function (e) {
+  if (e.target === this) this.classList.remove("open");
+});
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+const pageTitles = {
+  dashboard: ["儀表板", "掌握轉職進度總覽"],
+  jobs: ["職缺追蹤", "管理正在追蹤與投遞的職缺"],
+  resume: ["我的履歷", "維護目前的履歷內容"],
+  learning: ["學習進度", "追蹤補強技能的學習狀態"],
+  calendar: ["時程規劃", "安排學習、投遞與面試時程"],
+  interviews: ["面試紀錄", "記錄面試準備與結果"],
+  settings: ["設定", "同步狀態與資料備份"]
+};
+document.querySelectorAll(".nav-link").forEach(function (link) {
+  link.addEventListener("click", function () {
+    const page = this.getAttribute("data-page");
+    document.querySelectorAll(".nav-link").forEach(function (l) { l.classList.remove("active"); });
+    this.classList.add("active");
+    document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
+    document.getElementById("page-" + page).classList.add("active");
+    document.getElementById("pageTitle").textContent = pageTitles[page][0];
+    document.getElementById("pageSubtitle").textContent = pageTitles[page][1];
+    closeSidebarMobile();
+    if (page === "calendar") renderCalendar();
+  });
+});
+function closeSidebarMobile() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarOverlay").classList.remove("open");
+}
+document.getElementById("hamburgerBtn").onclick = function () {
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("sidebarOverlay").classList.add("open");
+};
+document.getElementById("sidebarOverlay").onclick = closeSidebarMobile;
+
+/* ============================================================
+   Sync status UI
+   ============================================================ */
+function setSyncStatus(status, timestamp) {
+  syncStatus = status;
+  const label = { green: "同步成功", yellow: "同步中", red: "同步失敗 / 離線" }[status];
+  ["sidebarSyncDot", "topSyncDot"].forEach(function (id) {
+    document.getElementById(id).className = "sync-dot " + status;
+  });
+  document.getElementById("sidebarSyncText").textContent = label;
+  document.getElementById("topSyncText").textContent = label;
+  document.getElementById("settingsSyncStatus").textContent = label;
+  if (timestamp) {
+    state.meta.lastSync = timestamp;
+    const t = fmtDateTime(timestamp);
+    document.getElementById("sidebarSyncTime").textContent = "最近同步：" + t;
+    document.getElementById("settingsSyncTime").textContent = t;
+  }
+}
+
+/* ============================================================
+   Firebase sync
+   ============================================================ */
+// 無論是否有設定 Firebase，都會先寫入 localStorage 當作保底備份，
+// 避免 Firebase 尚未設定妥當、網路異常或寫入失敗時資料遺失。
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch (e) {
+    console.error("localStorage 寫入失敗", e);
+    return false;
+  }
+}
+function loadFromLocalStorage() {
+  const local = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (!local) return false;
+  try {
+    const parsed = JSON.parse(local);
+    Object.assign(state, parsed);
+    ensureResumeVersions();
+    return true;
+  } catch (e) {
+    console.error("localStorage 資料解析失敗", e);
+    return false;
+  }
+}
+
+function saveToCloud(path, data) {
+  // 一律先寫本機備份，保證即使雲端同步失敗，重新整理後資料仍在
+  saveToLocalStorage();
+  if (!firebaseReady) {
+    setSyncStatus("yellow");
+    setTimeout(function () { setSyncStatus("green", Date.now()); }, 300);
+    return;
+  }
+  setSyncStatus("yellow");
+  db.ref(path).set(data)
+    .then(function () { setSyncStatus("green", Date.now()); })
+    .catch(function (err) {
+      console.error(err);
+      setSyncStatus("red");
+      toast("雲端同步失敗，已保留在本機備份：" + err.message, "error");
+    });
+}
+function loadFromCloud() {
+  // 先載入本機備份，確保畫面立即有資料可看
+  loadFromLocalStorage();
+  if (!firebaseReady) {
+    setSyncStatus("green", state.meta.lastSync || Date.now());
+    renderAll();
+    return;
+  }
+  renderAll();
+  db.ref("careerApp").on("value", function (snap) {
+    const val = snap.val();
+    if (val) {
+      state.jobs = val.jobs || {};
+      state.learning = val.learning || {};
+      state.events = val.events || {};
+      state.interviews = val.interviews || {};
+      state.resume = val.resume; // 舊資料相容，ensureResumeVersions() 會自動遷移
+      state.resumeVersions = val.resumeVersions || {};
+      state.activeResumeVersion = val.activeResumeVersion || null;
+      ensureResumeVersions();
+      state.meta = val.meta || state.meta;
+      saveToLocalStorage();
+    }
+    setSyncStatus("green", Date.now());
+    renderAll();
+  }, function (err) {
+    console.error(err);
+    setSyncStatus("red");
+    toast("讀取雲端資料失敗，將使用本機備份：" + err.message, "error");
+    loadFromLocalStorage();
+    renderAll();
+  });
+}
+function persist() {
+  saveToCloud("careerApp", state);
+  renderAll();
+}
+
+/* ============================================================
+   RENDER ALL
+   ============================================================ */
+function renderAll() {
+  ensureResumeVersions();
+  renderDashboard();
+  renderJobs();
+  renderResume();
+  renderLearning();
+  renderCalendar();
+  renderInterviews();
+  renderSettings();
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const jobs = Object.values(state.jobs);
+  const learning = Object.values(state.learning);
+  const events = Object.values(state.events);
+  const interviews = Object.values(state.interviews);
+
+  document.getElementById("statJobs").textContent = jobs.filter(function(j){return j.status !== "rejected";}).length;
+  document.getElementById("statLearning").textContent = learning.filter(function (l) { return l.status === "in_progress"; }).length;
+  const now = new Date();
+  const thisMonthEvents = events.filter(function (e) {
+    const d = new Date(e.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  document.getElementById("statEvents").textContent = thisMonthEvents.length;
+  document.getElementById("statInterviews").textContent = interviews.length;
+
+  const upcoming = events.filter(function (e) { return new Date(e.date) >= new Date(new Date().toDateString()); })
+    .sort(function (a, b) { return new Date(a.date) - new Date(b.date); }).slice(0, 6);
+  const typeLabel = { learn: "學習", interview: "面試", apply: "投遞履歷", other: "其他" };
+  const typeCls = { learn: "blue", interview: "red", apply: "amber", other: "gray" };
+  document.getElementById("dashUpcoming").innerHTML = upcoming.length ? upcoming.map(function (e) {
+    return '<div class="mini-row"><div><div class="mini-row-title">' + esc(e.title) + '</div><div class="mini-row-sub">' + fmtDate(e.date) + '</div></div><span class="badge ' + typeCls[e.type] + '">' + typeLabel[e.type] + '</span></div>';
+  }).join("") : '<div class="empty-note">目前沒有安排事項</div>';
+
+  const learnSorted = learning.filter(function (l) { return l.status !== "done"; }).slice(0, 6);
+  const statusLabel = { not_started: "未開始", in_progress: "學習中", done: "已學會" };
+  document.getElementById("dashLearning").innerHTML = learnSorted.length ? learnSorted.map(function (l) {
+    return '<div class="mini-row"><div><div class="mini-row-title">' + esc(l.name) + '</div><div class="mini-row-sub">' + esc(l.category || "") + '</div></div><span class="badge ' + (l.status === "in_progress" ? "blue" : "gray") + '">' + statusLabel[l.status] + '</span></div>';
+  }).join("") : '<div class="empty-note">目前沒有學習項目</div>';
+}
+
+/* ============================================================
+   JOBS
+   ============================================================ */
+const jobStatusMeta = {
+  watching: { label: "觀察中", cls: "gray" },
+  applied: { label: "已投遞", cls: "amber" },
+  interviewing: { label: "面試中", cls: "blue" },
+  offer: { label: "已錄取", cls: "teal" },
+  rejected: { label: "已婉拒/未通過", cls: "red" }
+};
+const jobCategoryPresets = ["數據分析", "稽核", "PM", "財務人員"];
+
+document.getElementById("jobStatusFilter").addEventListener("change", renderJobs);
+document.getElementById("jobCategoryFilter").addEventListener("change", renderJobs);
+
+function allJobCategories() {
+  const set = new Set(jobCategoryPresets);
+  Object.values(state.jobs).forEach(function (j) { if (j.category) set.add(j.category); });
+  return Array.from(set);
+}
+
+function renderJobs() {
+  const catSel = document.getElementById("jobCategoryFilter");
+  const prevCatVal = catSel.value;
+  catSel.innerHTML = '<option value="">全部類別</option>' + allJobCategories().map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join("");
+  catSel.value = prevCatVal;
+
+  const filter = document.getElementById("jobStatusFilter").value;
+  const catFilter = catSel.value;
+  const grid = document.getElementById("jobsGrid");
+  let jobs = Object.entries(state.jobs);
+  if (filter) jobs = jobs.filter(function (e) { return e[1].status === filter; });
+  if (catFilter) jobs = jobs.filter(function (e) { return e[1].category === catFilter; });
+  jobs.sort(function (a, b) { return (b[1].createdAt || 0) - (a[1].createdAt || 0); });
+
+  if (!jobs.length) {
+    grid.innerHTML = '<div class="empty-note" style="grid-column:1/-1;">尚無職缺資料，點擊「新增職缺」開始紀錄</div>';
+    return;
+  }
+  grid.innerHTML = jobs.map(function (entry) {
+    const id = entry[0], j = entry[1];
+    const meta = jobStatusMeta[j.status] || jobStatusMeta.watching;
+    return '<div class="card">' +
+      '<div class="card-top"><div><div class="card-title title-accent">' + esc(j.title) + '</div><div class="card-sub">' + esc(j.company || "") + '</div></div>' +
+      '<span class="badge ' + meta.cls + '">' + meta.label + '</span></div>' +
+      (j.category ? '<div><span class="badge purple">' + esc(j.category) + '</span></div>' : "") +
+      (j.resumeVersionId && state.resumeVersions[j.resumeVersionId] ? '<div class="card-meta-row">' + fi("file-text", 13) + '<span>建議使用履歷：' + esc(state.resumeVersions[j.resumeVersionId].name) + '</span></div>' : "") +
+      (j.location || j.jobType ? '<div class="card-meta-row">' + fi("map-pin", 13) + '<span>' + esc(j.location || "未填地點") + (j.jobType ? " · " + esc(j.jobType) : "") + '</span></div>' : "") +
+      (j.jobDesc ? '<div><div class="card-desc-label">工作內容</div><div class="card-notes" style="margin-top:0;">' + nl2br(j.jobDesc) + '</div></div>' : "") +
+      (j.mustHave ? '<div><div class="card-desc-label">必要能力</div><div class="tag-list vertical">' + splitLines(j.mustHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
+      (j.niceToHave ? '<div><div class="card-desc-label">加分能力</div><div class="tag-list vertical">' + splitLines(j.niceToHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
+      (j.notes ? '<div class="card-notes">' + nl2br(j.notes) + '</div>' : "") +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">' +
+      (j.url ? '<a class="card-link" href="' + esc(j.url) + '" target="_blank" rel="noopener">' + fi("external-link", 13) + '職缺連結</a>' : '<span></span>') +
+      '<div class="card-actions"><button class="icon-btn" data-edit-job="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-job="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
+      '</div></div>';
+  }).join("");
+
+  grid.querySelectorAll("[data-edit-job]").forEach(function (b) { b.onclick = function () { openJobModal(this.getAttribute("data-edit-job")); }; });
+  grid.querySelectorAll("[data-del-job]").forEach(function (b) {
+    b.onclick = function () {
+      const id = this.getAttribute("data-del-job");
+      openConfirm("確定要刪除「" + (state.jobs[id] ? state.jobs[id].title : "") + "」這筆職缺嗎？", function () {
+        delete state.jobs[id]; persist(); toast("已刪除職缺");
+      });
+    };
+  });
+}
+
+function openJobModal(id) {
+  const j = id ? state.jobs[id] : { title: "", company: "", url: "", location: "", jobType: "", category: "", jobDesc: "", mustHave: "", niceToHave: "", status: "watching", notes: "", resumeVersionId: "" };
+  const cats = allJobCategories();
+  ensureResumeVersions();
+  const isPreset = !j.category || cats.indexOf(j.category) >= 0;
+  const body =
+    '<div class="form-field"><label>職缺名稱</label><input class="input" id="fJobTitle" value="' + esc(j.title) + '"></div>' +
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>公司名稱</label><input class="input" id="fJobCompany" value="' + esc(j.company) + '"></div>' +
+    '<div class="form-field"><label>地點</label><input class="input" id="fJobLocation" value="' + esc(j.location) + '"></div>' +
+    '<div class="form-field"><label>工作性質</label><input class="input" id="fJobType" placeholder="全職／遠端／混合" value="' + esc(j.jobType) + '"></div>' +
+    '<div class="form-field"><label>狀態</label><select class="select" id="fJobStatus">' +
+    Object.keys(jobStatusMeta).map(function (k) { return '<option value="' + k + '"' + (j.status === k ? " selected" : "") + '>' + jobStatusMeta[k].label + '</option>'; }).join("") +
+    '</select></div>' +
+    '<div class="form-field"><label>類別</label><select class="select" id="fJobCategory">' +
+    '<option value=""' + (!j.category ? " selected" : "") + '>請選擇類別</option>' +
+    cats.map(function (c) { return '<option value="' + esc(c) + '"' + (j.category === c ? " selected" : "") + '>' + esc(c) + '</option>'; }).join("") +
+    '<option value="__custom__"' + (j.category && !isPreset ? " selected" : "") + '>其他（自訂）...</option>' +
+    '</select></div>' +
+    '</div>' +
+    '<div class="form-field" id="fJobCategoryCustomWrap" style="display:' + (isPreset ? "none" : "block") + ';"><label>自訂類別名稱</label><input class="input" id="fJobCategoryCustom" value="' + (isPreset ? "" : esc(j.category)) + '"></div>' +
+    '<div class="form-field"><label>職缺網址</label><input class="input" id="fJobUrl" value="' + esc(j.url) + '"></div>' +
+    '<div class="form-field"><label>建議使用履歷版本（選填）</label><select class="select" id="fJobResumeVersion">' +
+    '<option value="">（不指定）</option>' +
+    Object.entries(state.resumeVersions).map(function (entry) { return '<option value="' + entry[0] + '"' + (j.resumeVersionId === entry[0] ? " selected" : "") + '>' + esc(entry[1].name) + '</option>'; }).join("") +
+    '</select></div>' +
+    '<div class="form-field"><label>工作內容</label><textarea class="textarea" id="fJobDesc" placeholder="可換行列點" style="min-height:90px;">' + esc(j.jobDesc) + '</textarea></div>' +
+    '<div class="form-field"><label>必要能力（每行一項）</label><textarea class="textarea" id="fJobMustHave" placeholder="每行輸入一項能力">' + esc(j.mustHave) + '</textarea></div>' +
+    '<div class="form-field"><label>加分能力（每行一項）</label><textarea class="textarea" id="fJobNiceToHave" placeholder="每行輸入一項能力">' + esc(j.niceToHave) + '</textarea></div>' +
+    '<div class="form-field"><label>備註</label><textarea class="textarea" id="fJobNotes">' + esc(j.notes) + '</textarea></div>';
+
+  openModal(id ? "編輯職缺" : "新增職缺", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const title = document.getElementById("fJobTitle").value.trim();
+      if (!title) { toast("請輸入職缺名稱", "error"); return; }
+      let category = document.getElementById("fJobCategory").value;
+      if (category === "__custom__") category = document.getElementById("fJobCategoryCustom").value.trim();
+      const data = {
+        title: title,
+        company: document.getElementById("fJobCompany").value.trim(),
+        location: document.getElementById("fJobLocation").value.trim(),
+        jobType: document.getElementById("fJobType").value.trim(),
+        status: document.getElementById("fJobStatus").value,
+        category: category,
+        url: document.getElementById("fJobUrl").value.trim(),
+        resumeVersionId: document.getElementById("fJobResumeVersion").value,
+        jobDesc: document.getElementById("fJobDesc").value.trim(),
+        mustHave: document.getElementById("fJobMustHave").value.trim(),
+        niceToHave: document.getElementById("fJobNiceToHave").value.trim(),
+        notes: document.getElementById("fJobNotes").value.trim(),
+        createdAt: (id && state.jobs[id]) ? state.jobs[id].createdAt : Date.now()
+      };
+      state.jobs[id || uid()] = data;
+      persist();
+      closeModal();
+      toast(id ? "職缺已更新" : "職缺已新增");
+    }}
+  ]);
+  const catSelect = document.getElementById("fJobCategory");
+  catSelect.onchange = function () {
+    document.getElementById("fJobCategoryCustomWrap").style.display = this.value === "__custom__" ? "block" : "none";
+  };
+}
+document.getElementById("addJobBtn").onclick = function () { openJobModal(null); };
+
+/* ============================================================
+   RESUME（支援多版本）
+   ============================================================ */
+function renderResumeVersionSelector() {
+  ensureResumeVersions();
+  const sel = document.getElementById("resumeVersionSelect");
+  sel.innerHTML = Object.entries(state.resumeVersions).map(function (entry) {
+    return '<option value="' + entry[0] + '"' + (entry[0] === state.activeResumeVersion ? " selected" : "") + '>' + esc(entry[1].name) + '</option>';
+  }).join("");
+}
+
+function renderResume() {
+  renderResumeVersionSelector();
+  const r = activeResume();
+  const b = r.basic || {};
+  document.getElementById("resumeBasicView").innerHTML =
+    '<div class="kv-row"><span class="k">姓名</span><span class="v">' + esc(b.name || "未填") + '</span></div>' +
+    '<div class="kv-row"><span class="k">目標職務</span><span class="v">' + esc(b.targetRole || "未填") + '</span></div>' +
+    '<div class="kv-row"><span class="k">目標產業</span><span class="v">' + esc(b.targetIndustry || "未填") + '</span></div>' +
+    '<div class="kv-row"><span class="k">Email</span><span class="v">' + esc(b.email || "未填") + '</span></div>' +
+    '<div class="kv-row"><span class="k">電話</span><span class="v">' + esc(b.phone || "未填") + '</span></div>';
+
+  document.getElementById("resumeSummaryView").textContent = r.summary || "尚未填寫自我介紹";
+
+  const exps = Object.entries(r.experience || {}).sort(function (a, b2) { return (b2[1].order || 0) - (a[1].order || 0); });
+  document.getElementById("resumeExpView").innerHTML = exps.length ? exps.map(function (entry) {
+    const id = entry[0], e = entry[1];
+    return '<div class="resume-exp-item"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+      '<div><strong>' + esc(e.title) + '</strong><div class="card-sub">' + esc(e.company) + ' · ' + esc(e.period) + '</div></div>' +
+      '<div class="card-actions"><button class="icon-btn" data-edit-exp="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-exp="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
+      '</div><div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;white-space:pre-wrap;">' + esc(e.desc) + '</div></div>';
+  }).join("") : '<div class="empty-note">尚未新增工作經歷</div>';
+
+  document.getElementById("resumeExpView").querySelectorAll("[data-edit-exp]").forEach(function (btn) { btn.onclick = function () { openExpModal(this.getAttribute("data-edit-exp")); }; });
+  document.getElementById("resumeExpView").querySelectorAll("[data-del-exp]").forEach(function (btn) {
+    btn.onclick = function () {
+      const id = this.getAttribute("data-del-exp");
+      openConfirm("確定要刪除這筆工作經歷嗎？", function () { delete activeResume().experience[id]; persist(); toast("已刪除"); });
+    };
+  });
+
+  const skills = Object.entries(r.skills || {});
+  document.getElementById("resumeSkillsView").innerHTML = skills.length ? skills.map(function (entry) {
+    const id = entry[0], s = entry[1];
+    return '<span class="tag" style="display:inline-flex;align-items:center;gap:6px;">' + esc(s.name) + '<span data-del-skill="' + id + '" style="cursor:pointer;color:var(--accent-red);">' + fi("x", 11) + '</span></span>';
+  }).join("") : '<div class="empty-note">尚未新增技能</div>';
+  document.getElementById("resumeSkillsView").querySelectorAll("[data-del-skill]").forEach(function (el) {
+    el.onclick = function () { delete activeResume().skills[this.getAttribute("data-del-skill")]; persist(); toast("已刪除技能"); };
+  });
+}
+
+document.getElementById("resumeVersionSelect").onchange = function () {
+  state.activeResumeVersion = this.value;
+  persist();
+};
+document.getElementById("newResumeVersionBtn").onclick = function () {
+  const body = '<div class="form-field"><label>版本名稱</label><input class="input" id="fNewResName" placeholder="例：數據分析職缺版、稽核職缺版"></div>' +
+    '<div class="form-field"><label><input type="checkbox" id="fCloneCurrent" checked style="width:auto;margin-right:6px;">從目前版本複製內容</label></div>';
+  openModal("新增履歷版本", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "建立", cls: "btn-primary", icon: "check", onClick: function () {
+      const name = document.getElementById("fNewResName").value.trim();
+      if (!name) { toast("請輸入版本名稱", "error"); return; }
+      const clone = document.getElementById("fCloneCurrent").checked;
+      const id = uid();
+      state.resumeVersions[id] = clone ? JSON.parse(JSON.stringify(Object.assign({}, activeResume(), { name: name }))) : blankResumeVersion(name);
+      state.activeResumeVersion = id;
+      persist(); closeModal(); toast("已新增履歷版本「" + name + "」");
+    }}
+  ]);
+};
+document.getElementById("renameResumeVersionBtn").onclick = function () {
+  const body = '<div class="form-field"><label>版本名稱</label><input class="input" id="fRenameRes" value="' + esc(activeResume().name) + '"></div>';
+  openModal("重新命名履歷版本", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const name = document.getElementById("fRenameRes").value.trim();
+      if (!name) { toast("請輸入名稱", "error"); return; }
+      activeResume().name = name;
+      persist(); closeModal(); toast("已重新命名");
+    }}
+  ]);
+};
+document.getElementById("deleteResumeVersionBtn").onclick = function () {
+  if (Object.keys(state.resumeVersions).length <= 1) { toast("至少需保留一個履歷版本", "error"); return; }
+  const name = activeResume().name;
+  openConfirm("確定要刪除履歷版本「" + name + "」嗎？此動作無法復原。", function () {
+    delete state.resumeVersions[state.activeResumeVersion];
+    state.activeResumeVersion = Object.keys(state.resumeVersions)[0];
+    persist(); toast("已刪除履歷版本");
+  });
+};
+
+document.getElementById("editResumeBtn").onclick = function () {
+  const r = activeResume();
+  const b = r.basic || {};
+  const body =
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>姓名</label><input class="input" id="fResName" value="' + esc(b.name) + '"></div>' +
+    '<div class="form-field"><label>目標職務</label><input class="input" id="fResRole" value="' + esc(b.targetRole) + '"></div>' +
+    '<div class="form-field"><label>目標產業</label><input class="input" id="fResIndustry" value="' + esc(b.targetIndustry) + '"></div>' +
+    '<div class="form-field"><label>Email</label><input class="input" id="fResEmail" value="' + esc(b.email) + '"></div>' +
+    '<div class="form-field"><label>電話</label><input class="input" id="fResPhone" value="' + esc(b.phone) + '"></div>' +
+    '</div><div class="form-field full"><label>自我介紹</label><textarea class="textarea" id="fResSummary" style="min-height:120px;">' + esc(r.summary) + '</textarea></div>';
+  openModal("編輯履歷基本資料", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const r2 = activeResume();
+      r2.basic = {
+        name: document.getElementById("fResName").value.trim(),
+        targetRole: document.getElementById("fResRole").value.trim(),
+        targetIndustry: document.getElementById("fResIndustry").value.trim(),
+        email: document.getElementById("fResEmail").value.trim(),
+        phone: document.getElementById("fResPhone").value.trim()
+      };
+      r2.summary = document.getElementById("fResSummary").value.trim();
+      persist(); closeModal(); toast("履歷已更新");
+    }}
+  ]);
+};
+
+function openExpModal(id) {
+  const e = id ? activeResume().experience[id] : { title: "", company: "", period: "", desc: "" };
+  const body =
+    '<div class="form-field"><label>職稱</label><input class="input" id="fExpTitle" value="' + esc(e.title) + '"></div>' +
+    '<div class="form-grid"><div class="form-field"><label>公司</label><input class="input" id="fExpCompany" value="' + esc(e.company) + '"></div>' +
+    '<div class="form-field"><label>期間</label><input class="input" id="fExpPeriod" placeholder="2021/03 - 至今" value="' + esc(e.period) + '"></div></div>' +
+    '<div class="form-field"><label>工作內容 / 成就</label><textarea class="textarea" id="fExpDesc" style="min-height:100px;">' + esc(e.desc) + '</textarea></div>';
+  openModal(id ? "編輯工作經歷" : "新增工作經歷", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const title = document.getElementById("fExpTitle").value.trim();
+      if (!title) { toast("請輸入職稱", "error"); return; }
+      const r = activeResume();
+      r.experience[id || uid()] = {
+        title: title,
+        company: document.getElementById("fExpCompany").value.trim(),
+        period: document.getElementById("fExpPeriod").value.trim(),
+        desc: document.getElementById("fExpDesc").value.trim(),
+        order: (id && r.experience[id]) ? r.experience[id].order : Date.now()
+      };
+      persist(); closeModal(); toast("工作經歷已儲存");
+    }}
+  ]);
+}
+document.getElementById("addExpBtn").onclick = function () { openExpModal(null); };
+
+document.getElementById("addSkillBtn").onclick = function () {
+  const body = '<div class="form-field"><label>技能 / 證照名稱</label><input class="input" id="fSkillName" placeholder="例：Excel VBA、CFA Level 1、Power BI"></div>';
+  openModal("新增技能／證照", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "新增", cls: "btn-primary", icon: "check", onClick: function () {
+      const name = document.getElementById("fSkillName").value.trim();
+      if (!name) { toast("請輸入名稱", "error"); return; }
+      activeResume().skills[uid()] = { name: name };
+      persist(); closeModal(); toast("技能已新增");
+    }}
+  ]);
+};
+
+/* ============================================================
+   PDF 匯入履歷（實驗性：關鍵字啟發式拆解，需人工校對）
+   ============================================================ */
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+async function extractPdfText(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const pageTexts = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const lineMap = {};
+    content.items.forEach(function (item) {
+      const y = Math.round(item.transform[5]);
+      (lineMap[y] = lineMap[y] || []).push(item);
+    });
+    const ys = Object.keys(lineMap).map(Number).sort(function (a, b) { return b - a; });
+    const lines = ys.map(function (y) {
+      return lineMap[y].sort(function (a, b) { return a.transform[4] - b.transform[4]; }).map(function (it) { return it.str; }).join(" ").replace(/\s+/g, " ").trim();
+    }).filter(Boolean);
+    pageTexts.push(lines.join("\n"));
+  }
+  return pageTexts.join("\n\n");
+}
+
+const SECTION_KEYWORDS = {
+  experience: ["工作經歷", "工作经历", "經歷", "职业经历", "employment history", "work experience", "experience"],
+  skills: ["技能", "专长", "專長", "技能與證照", "skills", "專業技能", "core competencies"],
+  summary: ["自我介紹", "自傳", "关于我", "個人簡介", "summary", "profile", "about me"],
+  education: ["學歷", "教育背景", "education"]
+};
+function matchSectionHeader(line) {
+  const t = line.trim().toLowerCase().replace(/[:：]$/, "");
+  if (!t || t.length > 12) return null;
+  for (const key in SECTION_KEYWORDS) {
+    if (SECTION_KEYWORDS[key].some(function (kw) { return t === kw.toLowerCase(); })) return key;
+  }
+  return null;
+}
+function parseResumeText(text) {
+  const rawLines = text.split("\n").map(function (l) { return l.trim(); });
+  const sections = { header: [], experience: [], skills: [], summary: [], education: [] };
+  let current = "header";
+  rawLines.forEach(function (line) {
+    if (!line) return;
+    const matched = matchSectionHeader(line);
+    if (matched) { current = matched; return; }
+    sections[current].push(line);
+  });
+
+  const emailMatch = text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+  const phoneMatch = text.match(/(\+?886[-\s]?)?0?9\d{2}[-\s]?\d{3}[-\s]?\d{3}/) || text.match(/\d{2,4}[-\s]?\d{3,4}[-\s]?\d{3,4}/);
+  const nameGuess = sections.header.find(function (l) { return l.length <= 12 && !/[@\d]/.test(l); }) || "";
+
+  // 工作經歷：以含年份（4位數字）的行當作新一筆經歷的開頭，其餘行視為內容
+  const expLines = sections.experience;
+  const experiences = [];
+  let curExp = null;
+  expLines.forEach(function (line) {
+    if (/\d{4}/.test(line) || !curExp) {
+      curExp = { title: line, company: "", period: (line.match(/\d{4}[.\/\-年]?\s*\d{0,2}\s*[-~至to]+\s*(\d{4}|至今|現在|present)?/i) || [""])[0], desc: [] };
+      experiences.push(curExp);
+    } else {
+      curExp.desc.push(line);
+    }
+  });
+  const experienceDrafts = experiences.map(function (e) { return { title: e.title, company: e.company, period: e.period, desc: e.desc.join("\n") }; });
+
+  // 技能：以常見分隔符拆開
+  const skillTokens = [];
+  sections.skills.forEach(function (line) {
+    line.split(/[、,，\/|·]+/).forEach(function (tok) {
+      const t = tok.trim();
+      if (t && t.length <= 30) skillTokens.push(t);
+    });
+  });
+  const skillDrafts = Array.from(new Set(skillTokens));
+
+  const summaryText = sections.summary.length ? sections.summary.join("\n") : "";
+
+  return {
+    basic: { name: nameGuess, email: emailMatch ? emailMatch[0] : "", phone: phoneMatch ? phoneMatch[0] : "" },
+    summary: summaryText,
+    experiences: experienceDrafts,
+    skills: skillDrafts
+  };
+}
+
+let pdfDraft = null;
+document.getElementById("importPdfBtn").onclick = function () { document.getElementById("pdfImportFileInput").click(); };
+document.getElementById("pdfImportFileInput").onchange = function (e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  toast("正在解析 PDF...");
+  extractPdfText(file).then(function (text) {
+    pdfDraft = parseResumeText(text);
+    renderPdfReviewModal();
+  }).catch(function (err) {
+    console.error(err);
+    toast("PDF 解析失敗：" + err.message, "error");
+  });
+};
+
+function renderPdfReviewModal() {
+  const d = pdfDraft;
+  const body =
+    '<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;">此為自動辨識結果（實驗性功能），排版複雜的 PDF 可能不準確，請確認或修改後再匯入到目前履歷版本「' + esc(activeResume().name) + '」。</p>' +
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>姓名</label><input class="input" id="pdfName" value="' + esc(d.basic.name) + '"></div>' +
+    '<div class="form-field"><label>Email</label><input class="input" id="pdfEmail" value="' + esc(d.basic.email) + '"></div>' +
+    '<div class="form-field"><label>電話</label><input class="input" id="pdfPhone" value="' + esc(d.basic.phone) + '"></div>' +
+    '</div>' +
+    '<div class="form-field"><label>自我介紹</label><textarea class="textarea" id="pdfSummary" style="min-height:80px;">' + esc(d.summary) + '</textarea></div>' +
+    '<div class="form-field"><label>工作經歷（可刪除不需要的項目，儲存後可再進一步編輯細節）</label>' +
+    (d.experiences.length ? d.experiences.map(function (exp, i) {
+      return '<div style="border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;">' +
+        '<div style="display:flex;justify-content:space-between;gap:6px;">' +
+        '<input class="input" style="flex:1;" data-pdf-exp-title="' + i + '" value="' + esc(exp.title) + '">' +
+        '<button class="icon-btn" data-pdf-exp-remove="' + i + '">' + fi("x", 14) + '</button></div>' +
+        '<textarea class="textarea" style="margin-top:6px;min-height:50px;" data-pdf-exp-desc="' + i + '">' + esc(exp.desc) + '</textarea>' +
+        '</div>';
+    }).join("") : '<div class="empty-note">未偵測到工作經歷段落</div>') +
+    '</div>' +
+    '<div class="form-field"><label>技能（可刪除不需要的項目）</label><div class="tag-list" id="pdfSkillsTagList">' +
+    (d.skills.length ? d.skills.map(function (s, i) {
+      return '<span class="tag" style="display:inline-flex;align-items:center;gap:6px;">' + esc(s) + '<span data-pdf-skill-remove="' + i + '" style="cursor:pointer;color:var(--accent-red);">' + fi("x", 11) + '</span></span>';
+    }).join("") : '<div class="empty-note">未偵測到技能項目</div>') +
+    '</div></div>';
+
+  openModal("PDF 匯入預覽（實驗性）", body, [
+    { label: "取消", cls: "btn-secondary", onClick: function () { pdfDraft = null; closeModal(); } },
+    { label: "確認匯入", cls: "btn-primary", icon: "check", onClick: confirmPdfImport }
+  ]);
+
+  document.querySelectorAll("[data-pdf-exp-remove]").forEach(function (b) {
+    b.onclick = function () { d.experiences.splice(parseInt(this.getAttribute("data-pdf-exp-remove"), 10), 1); renderPdfReviewModal(); };
+  });
+  document.querySelectorAll("[data-pdf-skill-remove]").forEach(function (b) {
+    b.onclick = function () { d.skills.splice(parseInt(this.getAttribute("data-pdf-skill-remove"), 10), 1); renderPdfReviewModal(); };
+  });
+}
+
+function confirmPdfImport() {
+  const d = pdfDraft;
+  // 同步目前畫面上使用者可能已修改過的欄位
+  d.experiences.forEach(function (exp, i) {
+    const titleEl = document.querySelector('[data-pdf-exp-title="' + i + '"]');
+    const descEl = document.querySelector('[data-pdf-exp-desc="' + i + '"]');
+    if (titleEl) exp.title = titleEl.value.trim();
+    if (descEl) exp.desc = descEl.value.trim();
+  });
+  const r = activeResume();
+  const name = document.getElementById("pdfName").value.trim();
+  const email = document.getElementById("pdfEmail").value.trim();
+  const phone = document.getElementById("pdfPhone").value.trim();
+  if (name) r.basic.name = r.basic.name || name;
+  if (email) r.basic.email = r.basic.email || email;
+  if (phone) r.basic.phone = r.basic.phone || phone;
+  const summary = document.getElementById("pdfSummary").value.trim();
+  if (summary) r.summary = r.summary ? (r.summary + "\n\n" + summary) : summary;
+  d.experiences.forEach(function (exp) {
+    if (!exp.title) return;
+    r.experience[uid()] = { title: exp.title, company: exp.company || "", period: exp.period || "", desc: exp.desc || "", order: Date.now() + Math.random() };
+  });
+  d.skills.forEach(function (s) {
+    r.skills[uid()] = { name: s };
+  });
+  pdfDraft = null;
+  persist();
+  closeModal();
+  toast("PDF 內容已匯入，請再檢查一次履歷內容");
+}
+
+/* ============================================================
+   履歷匯出 PDF（開新視窗走瀏覽器列印 → 另存為 PDF）
+   ============================================================ */
+document.getElementById("exportResumePdfBtn").onclick = function () {
+  const r = activeResume();
+  const b = r.basic || {};
+  const exps = Object.values(r.experience || {}).sort(function (a, b2) { return (b2.order || 0) - (a.order || 0); });
+  const skills = Object.values(r.skills || {});
+  const win = window.open("", "_blank");
+  if (!win) { toast("瀏覽器阻擋了新視窗，請允許彈出視窗後再試一次", "error"); return; }
+  const html =
+    '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>' + esc(b.name || "履歷") + ' - ' + esc(r.name) + '</title>' +
+    '<style>' +
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;color:#222;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.6;}' +
+    'h1{font-size:24px;margin-bottom:2px;}' +
+    '.role{color:#555;font-size:14px;margin-bottom:10px;}' +
+    '.contact{font-size:12.5px;color:#555;margin-bottom:24px;}' +
+    'h2{font-size:15px;border-bottom:2px solid #333;padding-bottom:4px;margin:22px 0 10px;}' +
+    '.exp{margin-bottom:14px;}' +
+    '.exp .t{font-weight:700;font-size:13.5px;}' +
+    '.exp .s{color:#666;font-size:12px;margin-bottom:4px;}' +
+    '.exp .d{font-size:12.5px;white-space:pre-wrap;}' +
+    '.skills span{display:inline-block;background:#f0f0f0;border-radius:4px;padding:3px 9px;margin:0 6px 6px 0;font-size:12px;}' +
+    '.summary{font-size:12.5px;white-space:pre-wrap;}' +
+    '@media print{body{margin:0;padding:20px;}}' +
+    '</style></head><body>' +
+    '<h1>' + esc(b.name || "（未填姓名）") + '</h1>' +
+    '<div class="role">' + esc(b.targetRole || "") + (b.targetIndustry ? " ・ " + esc(b.targetIndustry) : "") + '</div>' +
+    '<div class="contact">' + [esc(b.email), esc(b.phone)].filter(Boolean).join(" ・ ") + '</div>' +
+    (r.summary ? '<h2>自我介紹</h2><div class="summary">' + esc(r.summary) + '</div>' : "") +
+    (exps.length ? '<h2>工作經歷</h2>' + exps.map(function (e) {
+      return '<div class="exp"><div class="t">' + esc(e.title) + '</div><div class="s">' + esc(e.company) + (e.period ? " ・ " + esc(e.period) : "") + '</div><div class="d">' + esc(e.desc) + '</div></div>';
+    }).join("") : "") +
+    (skills.length ? '<h2>技能與證照</h2><div class="skills">' + skills.map(function (s) { return '<span>' + esc(s.name) + '</span>'; }).join("") + '</div>' : "") +
+    '<script>window.onload = function () { setTimeout(function () { window.print(); }, 300); };<' + '/script>' +
+    '</body></html>';
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+};
+
+/* ============================================================
+   LEARNING
+   ============================================================ */
+const learnStatusMeta = {
+  not_started: { label: "待學習", cls: "gray" },
+  in_progress: { label: "學習中", cls: "blue" },
+  done: { label: "已學會", cls: "teal" }
+};
+function closeAllMoreMenus() {
+  document.querySelectorAll(".more-menu.open").forEach(function (m) { m.classList.remove("open"); });
+}
+document.addEventListener("click", closeAllMoreMenus);
+
+function renderLearning() {
+  const groups = { in_progress: [], not_started: [], done: [] };
+  Object.entries(state.learning).forEach(function (entry) {
+    const st = entry[1].status || "not_started";
+    (groups[st] || groups.not_started).push(entry);
+  });
+  const order = [["in_progress", "學習中"], ["not_started", "待學習"], ["done", "已學會"]];
+  const container = document.getElementById("learningLists");
+  if (!Object.keys(state.learning).length) {
+    container.innerHTML = '<div class="empty-note">尚無學習項目，點擊「新增學習項目」開始規劃</div>';
+    return;
+  }
+  container.innerHTML = order.map(function (o) {
+    const key = o[0], label = o[1], items = groups[key];
+    if (!items.length) return "";
+    return '<div class="learn-status-group"><h3>' + label + '（' + items.length + '）</h3><div class="cards-grid">' +
+      items.map(function (entry) {
+        const id = entry[0], l = entry[1];
+        const progress = l.progress || 0;
+        const curStatus = l.status || "not_started";
+        const logs = (l.logs || []).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+        return '<div class="card">' +
+          '<div class="card-top"><div><div class="card-title title-accent">' + esc(l.name) + '</div><div class="card-sub">' + esc(l.category || "") + '</div></div>' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<select class="status-mini-select learn-status-select" data-id="' + id + '">' +
+          Object.keys(learnStatusMeta).map(function (k) { return '<option value="' + k + '"' + (curStatus === k ? " selected" : "") + '>' + learnStatusMeta[k].label + '</option>'; }).join("") +
+          '</select>' +
+          '<div class="more-menu-wrap">' +
+          '<button class="more-btn" data-more-toggle="' + id + '">&#8943;</button>' +
+          '<div class="more-menu" data-more-menu="' + id + '">' +
+          '<button data-edit-learn="' + id + '">' + fi("edit-2", 14) + '編輯</button>' +
+          '<button class="danger" data-del-learn="' + id + '">' + fi("trash-2", 14) + '刪除</button>' +
+          '</div></div>' +
+          '</div></div>' +
+          (l.targetDate ? '<div class="card-meta-row">' + fi("calendar", 13) + '<span>目標日期 ' + fmtDate(l.targetDate) + '</span></div>' : "") +
+          (l.resourceUrl ? '<a class="card-link" href="' + esc(l.resourceUrl) + '" target="_blank" rel="noopener">' + fi("external-link", 13) + '學習資源</a>' : "") +
+          (l.notes ? '<div class="card-notes">' + nl2br(l.notes) + '</div>' : "") +
+          '<div class="progress-row"><input type="range" min="0" max="100" step="5" value="' + progress + '" class="learn-progress-slider" data-id="' + id + '" style="background:linear-gradient(to right, var(--graphite) ' + progress + '%, var(--border) ' + progress + '%);"><span class="progress-pct" data-pct="' + id + '">' + progress + '%</span></div>' +
+          '<button class="btn btn-secondary btn-sm" data-add-log="' + id + '" style="align-self:flex-start;">' + fi("plus", 13) + '新增學習紀錄</button>' +
+          (logs.length ? '<div class="learn-log-list">' + logs.map(function (lg) {
+            return '<div class="learn-log-item"><span class="learn-log-date">' + fmtDate(lg.date) + '</span><span class="learn-log-note">' + nl2br(lg.note) + '</span></div>';
+          }).join("") + '</div>' : "") +
+          '</div>';
+      }).join("") + '</div></div>';
+  }).join("");
+
+  container.querySelectorAll("[data-edit-learn]").forEach(function (b) { b.onclick = function () { closeAllMoreMenus(); openLearnModal(this.getAttribute("data-edit-learn")); }; });
+  container.querySelectorAll("[data-del-learn]").forEach(function (b) {
+    b.onclick = function () {
+      closeAllMoreMenus();
+      const id = this.getAttribute("data-del-learn");
+      openConfirm("確定要刪除「" + (state.learning[id] ? state.learning[id].name : "") + "」這個學習項目嗎？", function () { delete state.learning[id]; persist(); toast("已刪除"); });
+    };
+  });
+  container.querySelectorAll("[data-more-toggle]").forEach(function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      const id = this.getAttribute("data-more-toggle");
+      const menu = container.querySelector('[data-more-menu="' + id + '"]');
+      const wasOpen = menu.classList.contains("open");
+      closeAllMoreMenus();
+      if (!wasOpen) menu.classList.add("open");
+    };
+  });
+  container.querySelectorAll(".learn-status-select").forEach(function (sel) {
+    sel.onchange = function () { state.learning[this.getAttribute("data-id")].status = this.value; persist(); };
+  });
+  container.querySelectorAll(".learn-progress-slider").forEach(function (sl) {
+    const id = sl.getAttribute("data-id");
+    const pctLabel = container.querySelector('[data-pct="' + id + '"]');
+    sl.addEventListener("input", function () {
+      pctLabel.textContent = this.value + "%";
+      this.style.background = "linear-gradient(to right, var(--graphite) " + this.value + "%, var(--border) " + this.value + "%)";
+    });
+    sl.addEventListener("change", function () {
+      const val = parseInt(this.value, 10);
+      const item = state.learning[id];
+      item.progress = val;
+      if (val >= 100) item.status = "done";
+      else if (val > 0) item.status = "in_progress";
+      persist();
+    });
+  });
+  container.querySelectorAll("[data-add-log]").forEach(function (b) { b.onclick = function () { openLearnLogModal(this.getAttribute("data-add-log")); }; });
+}
+function openLearnModal(id) {
+  const l = id ? state.learning[id] : { name: "", category: "", status: "not_started", resourceUrl: "", targetDate: "", notes: "", progress: 0, logs: [] };
+  const body =
+    '<div class="form-field"><label>學習項目</label><input class="input" id="fLearnName" value="' + esc(l.name) + '"></div>' +
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>分類</label><input class="input" id="fLearnCategory" placeholder="例：財務分析、SQL、Excel" value="' + esc(l.category) + '"></div>' +
+    '<div class="form-field"><label>狀態</label><select class="select" id="fLearnStatus">' +
+    Object.keys(learnStatusMeta).map(function (k) { return '<option value="' + k + '"' + (l.status === k ? " selected" : "") + '>' + learnStatusMeta[k].label + '</option>'; }).join("") +
+    '</select></div>' +
+    '<div class="form-field"><label>目標完成日期</label><input class="input" type="date" id="fLearnDate" value="' + esc(l.targetDate) + '"></div>' +
+    '<div class="form-field"><label>學習資源網址</label><input class="input" id="fLearnUrl" value="' + esc(l.resourceUrl) + '"></div>' +
+    '</div><div class="form-field"><label>備註</label><textarea class="textarea" id="fLearnNotes">' + esc(l.notes) + '</textarea></div>';
+  openModal(id ? "編輯學習項目" : "新增學習項目", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const name = document.getElementById("fLearnName").value.trim();
+      if (!name) { toast("請輸入學習項目名稱", "error"); return; }
+      const existing = (id && state.learning[id]) ? state.learning[id] : {};
+      state.learning[id || uid()] = {
+        name: name,
+        category: document.getElementById("fLearnCategory").value.trim(),
+        status: document.getElementById("fLearnStatus").value,
+        targetDate: document.getElementById("fLearnDate").value,
+        resourceUrl: document.getElementById("fLearnUrl").value.trim(),
+        notes: document.getElementById("fLearnNotes").value.trim(),
+        progress: existing.progress || 0,
+        logs: existing.logs || []
+      };
+      persist(); closeModal(); toast(id ? "學習項目已更新" : "學習項目已新增");
+    }}
+  ]);
+}
+document.getElementById("addLearnBtn").onclick = function () { openLearnModal(null); };
+
+function openLearnLogModal(id) {
+  const body =
+    '<div class="form-field"><label>日期</label><input class="input" type="date" id="fLearnLogDate" value="' + new Date().toISOString().slice(0, 10) + '"></div>' +
+    '<div class="form-field"><label>學習簡述</label><textarea class="textarea" id="fLearnLogNote" placeholder="今天學了什麼、進度如何..." style="min-height:80px;"></textarea></div>';
+  openModal("新增學習紀錄", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "新增", cls: "btn-primary", icon: "check", onClick: function () {
+      const note = document.getElementById("fLearnLogNote").value.trim();
+      if (!note) { toast("請輸入學習簡述", "error"); return; }
+      const item = state.learning[id];
+      item.logs = item.logs || [];
+      item.logs.push({ date: document.getElementById("fLearnLogDate").value, note: note });
+      persist(); closeModal(); toast("學習紀錄已新增");
+    }}
+  ]);
+}
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+const evtTypeLabel = { learn: "學習", interview: "面試", apply: "投遞履歷", other: "其他" };
+function renderCalendar() {
+  const y = currentCalDate.getFullYear(), m = currentCalDate.getMonth();
+  document.getElementById("calTitle").textContent = y + " 年 " + (m + 1) + " 月";
+  const firstDay = new Date(y, m, 1);
+  const startWeekday = firstDay.getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const daysInPrevMonth = new Date(y, m, 0).getDate();
+
+  const eventsByDate = {};
+  Object.entries(state.events).forEach(function (entry) {
+    const eid = entry[0], e = entry[1];
+    const key = e.date;
+    (eventsByDate[key] = eventsByDate[key] || []).push(Object.assign({ _id: eid }, e));
+  });
+
+  const dowNames = ["日", "一", "二", "三", "四", "五", "六"];
+  let html = dowNames.map(function (d) { return '<div class="cal-dow">' + d + '</div>'; }).join("");
+
+  const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  for (let i = 0; i < totalCells; i++) {
+    let dateObj, otherMonth = false, dayNum;
+    if (i < startWeekday) {
+      dayNum = daysInPrevMonth - startWeekday + i + 1;
+      dateObj = new Date(y, m - 1, dayNum);
+      otherMonth = true;
+    } else if (i >= startWeekday + daysInMonth) {
+      dayNum = i - startWeekday - daysInMonth + 1;
+      dateObj = new Date(y, m + 1, dayNum);
+      otherMonth = true;
+    } else {
+      dayNum = i - startWeekday + 1;
+      dateObj = new Date(y, m, dayNum);
+    }
+    const dateKey = dateObj.toISOString().slice(0, 10);
+    const isToday = dateKey === todayStr;
+    const dayEventsAll = eventsByDate[dateKey] || [];
+    html += '<div class="cal-cell' + (otherMonth ? " other-month" : "") + (isToday ? " today" : "") + (dayEventsAll.length ? " has-evt" : "") + '" data-date="' + dateKey + '">' +
+      '<div class="cal-date-num">' + dayNum + '</div>' +
+      dayEventsAll.slice(0, 3).map(function (e) { return '<div class="cal-evt type-' + e.type + '" data-evt-id="' + e._id + '">' + esc(e.title) + '</div>'; }).join("") +
+      (dayEventsAll.length > 3 ? '<div class="cal-evt type-other">+' + (dayEventsAll.length - 3) + '</div>' : "") +
+      '</div>';
+  }
+  document.getElementById("calGrid").innerHTML = html;
+  document.querySelectorAll(".cal-cell").forEach(function (cell) {
+    cell.onclick = function () {
+      if (Date.now() < suppressCellClickUntil) return;
+      openDayEvents(this.getAttribute("data-date"));
+    };
+  });
+  setupCalendarDrag();
+}
+let suppressCellClickUntil = 0;
+
+/* ---- Calendar drag & drop (long-press, mouse + touch via Pointer Events) ---- */
+const dragCfg = { holdMs: 420, moveThreshold: 9 };
+let dragState = null;
+
+function setupCalendarDrag() {
+  document.querySelectorAll(".cal-evt[data-evt-id]").forEach(function (evtEl) {
+    evtEl.addEventListener("pointerdown", onEvtPointerDown);
+  });
+}
+
+function onEvtPointerDown(e) {
+  if (e.button !== undefined && e.button !== 0) return;
+  const el = e.currentTarget;
+  const startX = e.clientX, startY = e.clientY;
+  let longPressTimer = null;
+  let started = false;
+  let cancelled = false;
+
+  function cleanupPreDrag() {
+    document.removeEventListener("pointermove", onPreMove);
+    document.removeEventListener("pointerup", onPreUp);
+    document.removeEventListener("pointercancel", onPreUp);
+    if (longPressTimer) clearTimeout(longPressTimer);
+  }
+  function onPreMove(ev) {
+    const dx = ev.clientX - startX, dy = ev.clientY - startY;
+    if (Math.sqrt(dx * dx + dy * dy) > dragCfg.moveThreshold) {
+      cancelled = true;
+      cleanupPreDrag();
+    }
+  }
+  function onPreUp() {
+    cancelled = true;
+    cleanupPreDrag();
+  }
+  document.addEventListener("pointermove", onPreMove);
+  document.addEventListener("pointerup", onPreUp);
+  document.addEventListener("pointercancel", onPreUp);
+
+  longPressTimer = setTimeout(function () {
+    if (cancelled) return;
+    cleanupPreDrag();
+    started = true;
+    beginDrag(el, e.pointerId, startX, startY);
+  }, dragCfg.holdMs);
+}
+
+function beginDrag(el, pointerId, x, y) {
+  const evtId = el.getAttribute("data-evt-id");
+  el.classList.add("dragging-source");
+  document.body.style.userSelect = "none";
+
+  const ghost = document.createElement("div");
+  ghost.className = "evt-drag-ghost";
+  ghost.textContent = el.textContent;
+  ghost.style.left = x + "px";
+  ghost.style.top = y + "px";
+  document.body.appendChild(ghost);
+
+  let lastCell = null;
+
+  function onMove(ev) {
+    ghost.style.left = ev.clientX + "px";
+    ghost.style.top = ev.clientY + "px";
+    const under = document.elementFromPoint(ev.clientX, ev.clientY);
+    const cell = under ? under.closest(".cal-cell") : null;
+    if (lastCell && lastCell !== cell) lastCell.classList.remove("drag-over");
+    if (cell) cell.classList.add("drag-over");
+    lastCell = cell;
+  }
+  function finish(ev) {
+    document.removeEventListener("pointermove", onMove);
+    document.removeEventListener("pointerup", finish);
+    document.removeEventListener("pointercancel", finish);
+    ghost.remove();
+    el.classList.remove("dragging-source");
+    document.body.style.userSelect = "";
+    if (lastCell) lastCell.classList.remove("drag-over");
+    suppressCellClickUntil = Date.now() + 350;
+
+    const under = document.elementFromPoint(ev.clientX, ev.clientY);
+    const cell = under ? under.closest(".cal-cell") : null;
+    if (cell) {
+      const newDate = cell.getAttribute("data-date");
+      const evt = state.events[evtId];
+      if (evt && newDate && evt.date !== newDate) {
+        evt.date = newDate;
+        persist();
+        toast("已移動到 " + fmtDate(newDate));
+        renderCalendar();
+        return;
+      }
+    }
+    renderCalendar();
+  }
+  document.addEventListener("pointermove", onMove);
+  document.addEventListener("pointerup", finish);
+  document.addEventListener("pointercancel", finish);
+}
+
+document.getElementById("calPrev").onclick = function () { currentCalDate.setMonth(currentCalDate.getMonth() - 1); renderCalendar(); };
+document.getElementById("calNext").onclick = function () { currentCalDate.setMonth(currentCalDate.getMonth() + 1); renderCalendar(); };
+document.getElementById("calToday").onclick = function () { currentCalDate = new Date(); renderCalendar(); };
+
+function openDayEvents(dateKey) {
+  const items = Object.entries(state.events).filter(function (e) { return e[1].date === dateKey; });
+  const body = '<p style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px;">' + fmtDate(dateKey) + '</p>' +
+    (items.length ? items.map(function (entry) {
+      const id = entry[0], e = entry[1];
+      const linkedJob = e.jobId && state.jobs[e.jobId] ? state.jobs[e.jobId] : null;
+      const subParts = [];
+      if (linkedJob) subParts.push("關聯職缺：" + esc(linkedJob.title));
+      if (e.note) subParts.push(esc(e.note));
+      return '<div class="mini-row"><div><div class="mini-row-title">' + esc(e.title) + '</div><div class="mini-row-sub">' + subParts.join(" · ") + '</div></div>' +
+        '<div class="card-actions"><span class="badge ' + { learn: "blue", interview: "red", apply: "amber", other: "gray" }[e.type] + '">' + evtTypeLabel[e.type] + '</span>' +
+        '<button class="icon-btn" data-edit-evt="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-evt="' + id + '">' + fi("trash-2", 14) + '</button></div></div>';
+    }).join("") : '<div class="empty-note">這天尚無安排事項</div>') +
+    '<button class="btn btn-secondary btn-sm" id="addEventForDay" style="margin-top:12px;">' + fi("plus", 14) + '新增這天的事項</button>';
+  openModal("當日事項", body, [{ label: "關閉", cls: "btn-secondary", onClick: closeModal }]);
+  document.getElementById("addEventForDay").onclick = function () { openEventModal(null, dateKey); };
+  document.querySelectorAll("[data-edit-evt]").forEach(function (b) { b.onclick = function () { openEventModal(this.getAttribute("data-edit-evt")); }; });
+  document.querySelectorAll("[data-del-evt]").forEach(function (b) {
+    b.onclick = function () {
+      const id = this.getAttribute("data-del-evt");
+      openConfirm("確定要刪除這個事項嗎？", function () { delete state.events[id]; persist(); closeModal(); toast("已刪除"); });
+    };
+  });
+}
+
+function jobLinkOptions(selectedJobId) {
+  const entries = Object.entries(state.jobs).sort(function (a, b) { return (b[1].createdAt || 0) - (a[1].createdAt || 0); });
+  return '<option value="">（不關聯職缺）</option>' + entries.map(function (entry) {
+    const id = entry[0], j = entry[1];
+    return '<option value="' + id + '"' + (selectedJobId === id ? " selected" : "") + '>' + esc(j.title) + (j.company ? "（" + esc(j.company) + "）" : "") + '</option>';
+  }).join("");
+}
+function openEventModal(id, defaultDate) {
+  const e = id ? state.events[id] : { title: "", type: "learn", date: defaultDate || new Date().toISOString().slice(0, 10), note: "", jobId: "" };
+  const showJobLink = e.type === "interview" || e.type === "apply";
+  const body =
+    '<div class="form-field"><label>事項標題</label><input class="input" id="fEvtTitle" value="' + esc(e.title) + '"></div>' +
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>類型</label><select class="select" id="fEvtType">' +
+    Object.keys(evtTypeLabel).map(function (k) { return '<option value="' + k + '"' + (e.type === k ? " selected" : "") + '>' + evtTypeLabel[k] + '</option>'; }).join("") +
+    '</select></div>' +
+    '<div class="form-field"><label>日期</label><input class="input" type="date" id="fEvtDate" value="' + esc(e.date) + '"></div>' +
+    '</div>' +
+    '<div class="form-field" id="fEvtJobWrap" style="display:' + (showJobLink ? "block" : "none") + ';"><label>關聯職缺（選填）</label><select class="select" id="fEvtJob">' + jobLinkOptions(e.jobId) + '</select></div>' +
+    '<div class="form-field"><label>備註</label><textarea class="textarea" id="fEvtNote">' + esc(e.note) + '</textarea></div>';
+  openModal(id ? "編輯事項" : "新增事項", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const title = document.getElementById("fEvtTitle").value.trim();
+      if (!title) { toast("請輸入標題", "error"); return; }
+      const jobWrap = document.getElementById("fEvtJobWrap");
+      const jobId = jobWrap.style.display !== "none" ? document.getElementById("fEvtJob").value : "";
+      state.events[id || uid()] = {
+        title: title,
+        type: document.getElementById("fEvtType").value,
+        date: document.getElementById("fEvtDate").value,
+        note: document.getElementById("fEvtNote").value.trim(),
+        jobId: jobId
+      };
+      persist(); closeModal(); toast(id ? "事項已更新" : "事項已新增"); renderCalendar();
+    }}
+  ]);
+  document.getElementById("fEvtType").onchange = function () {
+    document.getElementById("fEvtJobWrap").style.display = (this.value === "interview" || this.value === "apply") ? "block" : "none";
+  };
+}
+document.getElementById("addEventBtn").onclick = function () { openEventModal(null); };
+
+/* ============================================================
+   INTERVIEWS
+   ============================================================ */
+function renderInterviews() {
+  const list = document.getElementById("interviewsList");
+  const entries = Object.entries(state.interviews).sort(function (a, b) { return new Date(b[1].date) - new Date(a[1].date); });
+  if (!entries.length) { list.innerHTML = '<div class="empty-note">尚無面試紀錄，點擊「新增面試紀錄」開始準備</div>'; return; }
+  list.innerHTML = entries.map(function (entry) {
+    const id = entry[0], iv = entry[1];
+    const prep = iv.prepItems || [];
+    const doneCount = prep.filter(function (p) { return p.done; }).length;
+    return '<div class="interview-card">' +
+      '<div class="card-top"><div><div class="card-title">' + esc(iv.company) + ' － ' + esc(iv.position) + '</div><div class="card-sub">' + fmtDate(iv.date) + (iv.round ? " · " + esc(iv.round) : "") + '</div></div>' +
+      '<div class="card-actions"><button class="icon-btn" data-edit-iv="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-iv="' + id + '">' + fi("trash-2", 14) + '</button></div></div>' +
+      (iv.result ? '<span class="badge ' + ({ pending: "gray", passed: "teal", failed: "red" }[iv.result]) + '">' + ({ pending: "結果未知", passed: "通過", failed: "未通過" }[iv.result]) + '</span>' : "") +
+      '<div class="progress-bar-track" style="margin-top:8px;"><div class="progress-bar-fill" style="width:' + (prep.length ? Math.round(doneCount / prep.length * 100) : 0) + '%"></div></div>' +
+      '<ul class="prep-list">' + prep.map(function (p, idx) {
+        return '<li class="prep-item' + (p.done ? " done" : "") + '"><input type="checkbox" data-iv="' + id + '" data-idx="' + idx + '" ' + (p.done ? "checked" : "") + '><span>' + esc(p.text) + '</span></li>';
+      }).join("") + '</ul>' +
+      (iv.notes ? '<div class="card-notes" style="margin-top:8px;">' + esc(iv.notes) + '</div>' : "") +
+      '</div>';
+  }).join("");
+
+  list.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
+    cb.onchange = function () {
+      const iv = state.interviews[this.getAttribute("data-iv")];
+      iv.prepItems[this.getAttribute("data-idx")].done = this.checked;
+      persist();
+    };
+  });
+  list.querySelectorAll("[data-edit-iv]").forEach(function (b) { b.onclick = function () { openInterviewModal(this.getAttribute("data-edit-iv")); }; });
+  list.querySelectorAll("[data-del-iv]").forEach(function (b) {
+    b.onclick = function () {
+      const id = this.getAttribute("data-del-iv");
+      openConfirm("確定要刪除這筆面試紀錄嗎？", function () { delete state.interviews[id]; persist(); toast("已刪除"); });
+    };
+  });
+}
+
+function openInterviewModal(id) {
+  const iv = id ? state.interviews[id] : { company: "", position: "", round: "", date: new Date().toISOString().slice(0, 10), result: "pending", notes: "", prepItems: [] };
+  const prepText = (iv.prepItems || []).map(function (p) { return p.text; }).join("\n");
+  const body =
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>公司名稱</label><input class="input" id="fIvCompany" value="' + esc(iv.company) + '"></div>' +
+    '<div class="form-field"><label>應徵職務</label><input class="input" id="fIvPosition" value="' + esc(iv.position) + '"></div>' +
+    '<div class="form-field"><label>面試輪次</label><input class="input" id="fIvRound" placeholder="例：第一輪 / HR面談" value="' + esc(iv.round) + '"></div>' +
+    '<div class="form-field"><label>面試日期</label><input class="input" type="date" id="fIvDate" value="' + esc(iv.date) + '"></div>' +
+    '<div class="form-field"><label>結果</label><select class="select" id="fIvResult">' +
+    '<option value="pending"' + (iv.result === "pending" ? " selected" : "") + '>結果未知</option>' +
+    '<option value="passed"' + (iv.result === "passed" ? " selected" : "") + '>通過</option>' +
+    '<option value="failed"' + (iv.result === "failed" ? " selected" : "") + '>未通過</option>' +
+    '</select></div></div>' +
+    '<div class="form-field"><label>準備項目（每行一項）</label><textarea class="textarea" id="fIvPrep" style="min-height:90px;">' + esc(prepText) + '</textarea></div>' +
+    '<div class="form-field"><label>面試筆記</label><textarea class="textarea" id="fIvNotes">' + esc(iv.notes) + '</textarea></div>';
+  openModal(id ? "編輯面試紀錄" : "新增面試紀錄", body, [
+    { label: "取消", cls: "btn-secondary", onClick: closeModal },
+    { label: "儲存", cls: "btn-primary", icon: "check", onClick: function () {
+      const company = document.getElementById("fIvCompany").value.trim();
+      if (!company) { toast("請輸入公司名稱", "error"); return; }
+      const prevPrep = (iv.prepItems || []);
+      const newLines = document.getElementById("fIvPrep").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+      const newPrep = newLines.map(function (text) {
+        const existing = prevPrep.find(function (p) { return p.text === text; });
+        return { text: text, done: existing ? existing.done : false };
+      });
+      state.interviews[id || uid()] = {
+        company: company,
+        position: document.getElementById("fIvPosition").value.trim(),
+        round: document.getElementById("fIvRound").value.trim(),
+        date: document.getElementById("fIvDate").value,
+        result: document.getElementById("fIvResult").value,
+        notes: document.getElementById("fIvNotes").value.trim(),
+        prepItems: newPrep
+      };
+      persist(); closeModal(); toast(id ? "面試紀錄已更新" : "面試紀錄已新增");
+    }}
+  ]);
+}
+document.getElementById("addInterviewBtn").onclick = function () { openInterviewModal(null); };
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings() {
+  const count = Object.keys(state.jobs).length + Object.keys(state.learning).length + Object.keys(state.events).length + Object.keys(state.interviews).length;
+  document.getElementById("settingsDataCount").textContent = count + " 筆";
+  document.getElementById("settingsMode").textContent = firebaseReady ? "Firebase 雲端同步" : "本機儲存（尚未設定 Firebase）";
+  document.getElementById("firebaseConfigDisplay").textContent =
+    "const firebaseConfig = {\n" +
+    "  apiKey: \"" + firebaseConfig.apiKey + "\",\n" +
+    "  authDomain: \"" + firebaseConfig.authDomain + "\",\n" +
+    "  databaseURL: \"" + firebaseConfig.databaseURL + "\",\n" +
+    "  projectId: \"" + firebaseConfig.projectId + "\",\n" +
+    "  storageBucket: \"" + firebaseConfig.storageBucket + "\",\n" +
+    "  messagingSenderId: \"" + firebaseConfig.messagingSenderId + "\",\n" +
+    "  appId: \"" + firebaseConfig.appId + "\"\n" +
+    "};";
+}
+
+document.getElementById("exportBtn").onclick = function () {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "career-plan-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("備份檔已匯出");
+};
+document.getElementById("importBtn").onclick = function () { document.getElementById("importFileInput").click(); };
+document.getElementById("importFileInput").onchange = function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (evt) {
+    try {
+      const parsed = JSON.parse(evt.target.result);
+      openConfirm("匯入將會覆蓋目前所有資料，確定要繼續嗎？", function () {
+        state.jobs = parsed.jobs || {};
+        state.learning = parsed.learning || {};
+        state.events = parsed.events || {};
+        state.interviews = parsed.interviews || {};
+        state.resume = parsed.resume;
+        state.resumeVersions = parsed.resumeVersions || {};
+        state.activeResumeVersion = parsed.activeResumeVersion || null;
+        ensureResumeVersions();
+        persist();
+        toast("資料匯入成功");
+      });
+    } catch (err) {
+      toast("檔案格式錯誤，匯入失敗", "error");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+};
+
+/* ============================================================
+   Init
+   ============================================================ */
+/* ============================================================
+   Auth（密碼保護，僅在有設定 Firebase 時啟用）
+   ============================================================ */
+function showLoginScreen() { document.getElementById("loginScreen").classList.add("show"); }
+function hideLoginScreen() { document.getElementById("loginScreen").classList.remove("show"); }
+
+function initAuthAndLoad() {
+  if (!firebaseReady) {
+    hideLoginScreen();
+    loadFromCloud();
+    return;
+  }
+  auth.onAuthStateChanged(function (user) {
+    if (user) {
+      currentUser = user;
+      hideLoginScreen();
+      document.getElementById("settingsAccountRow").style.display = "flex";
+      document.getElementById("settingsAccountEmail").textContent = user.email || "已登入";
+      document.getElementById("logoutBtn").style.display = "inline-flex";
+      loadFromCloud();
+    } else {
+      currentUser = null;
+      if (db) db.ref("careerApp").off();
+      showLoginScreen();
+    }
+  });
+}
+
+document.getElementById("loginSubmitBtn").onclick = function () {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errEl = document.getElementById("loginError");
+  errEl.textContent = "";
+  if (!email || !password) { errEl.textContent = "請輸入 Email 與密碼"; return; }
+  auth.signInWithEmailAndPassword(email, password).catch(function (err) {
+    const map = {
+      "auth/invalid-email": "Email 格式不正確",
+      "auth/user-not-found": "帳號不存在，請至 Firebase 主控台 Authentication 建立使用者",
+      "auth/wrong-password": "密碼錯誤",
+      "auth/invalid-credential": "帳號或密碼錯誤"
+    };
+    errEl.textContent = map[err.code] || ("登入失敗：" + err.message);
+  });
+};
+document.getElementById("loginPassword").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") document.getElementById("loginSubmitBtn").click();
+});
+document.getElementById("logoutBtn").onclick = function () {
+  if (auth) auth.signOut();
+};
+
+window.addEventListener("DOMContentLoaded", function () {
+  renderIcons(document);
+  initAuthAndLoad();
+});
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js").catch(function () {});
+}
+</script>
+</body>
+</html>
