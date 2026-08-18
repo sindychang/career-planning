@@ -118,8 +118,8 @@ body{
   min-height:100vh;
 }
 .topbar{
-  background:var(--graphite-dark);
-  border-bottom:1px solid var(--graphite-dark);
+  background:var(--graphite);
+  border-bottom:1px solid var(--graphite);
   padding:14px 26px;
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:20;
@@ -242,7 +242,7 @@ body{
 .free-list li{display:flex;align-items:flex-start;gap:7px;margin-bottom:3px;}
 .free-list li .bullet-mark{flex-shrink:0;color:var(--graphite-dark);font-weight:700;line-height:1.65;}
 .free-list li .bullet-text{flex:1;}
-.card-desc-label{font-size:11.5px;color:var(--text-muted);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.02em;}
+.card-desc-label{font-size:12px;color:var(--title-accent);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em;}
 
 /* ---------- Progress bar ---------- */
 .progress-bar-track{background:var(--border);border-radius:20px;height:7px;overflow:hidden;}
@@ -264,6 +264,22 @@ body{
 .status-mini-select.st-amber{background:var(--accent-amber-bg);color:var(--accent-amber);border-color:transparent;}
 .job-highlight{box-shadow:0 0 0 3px var(--accent-blue) !important;}
 .job-top-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
+.job-stars{display:inline-flex;gap:1px;}
+.job-star{color:var(--border-strong);cursor:pointer;display:inline-flex;line-height:0;}
+.job-star.filled{color:var(--accent-amber);}
+.job-star:hover{color:var(--accent-amber);opacity:.75;}
+.job-quick-link{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card-bg);color:var(--text-muted);}
+.job-quick-link:hover{background:var(--card-bg-2);color:var(--text);}
+.job-category-section{margin-bottom:24px;}
+.job-category-section h3{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--text-muted);margin-bottom:10px;}
+.advanced-toggle-row{margin:4px 0 10px;}
+.advanced-fields{display:none;flex-direction:column;gap:14px;}
+.advanced-fields.open{display:flex;}
+.job-rating-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0;}
+.job-stars-picker{display:inline-flex;gap:2px;}
+.job-stars-picker .job-star{color:var(--border-strong);}
+.job-stars-picker .job-star.filled{color:var(--accent-amber);}
+.job-stars-picker .job-star:hover{color:var(--accent-amber);opacity:.75;}
 
 /* ---------- More menu (···) ---------- */
 .more-menu-wrap{position:relative;flex-shrink:0;}
@@ -543,7 +559,7 @@ body{
           <option value="">全部類別</option>
         </select>
       </div>
-      <div class="cards-grid" id="jobsGrid"></div>
+      <div id="jobsGrid"></div>
     </div>
 
     <!-- ===================== RESUME ===================== -->
@@ -757,10 +773,10 @@ if (!isFirebaseConfigPlaceholder(firebaseConfig)) {
 /* ============================================================
    Feather icon helper
    ============================================================ */
-function fi(name, size) {
+function fi(name, size, extraAttrs) {
   size = size || 18;
   if (window.feather && feather.icons[name]) {
-    return feather.icons[name].toSvg({ width: size, height: size, "stroke-width": 1.9 });
+    return feather.icons[name].toSvg(Object.assign({ width: size, height: size, "stroke-width": 1.9 }, extraAttrs || {}));
   }
   return "";
 }
@@ -933,9 +949,8 @@ function openModal(title, bodyHtml, footButtons) {
 }
 function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); }
 document.getElementById("modalCloseBtn").onclick = closeModal;
-document.getElementById("modalOverlay").addEventListener("click", function (e) {
-  if (e.target === this) closeModal();
-});
+/* 編輯視窗不會因為點擊外部（背景遮罩）而關閉，避免打到一半不小心點到外面內容就消失；
+   要關閉請按右上角的關閉按鈕或表單內的「取消」按鈕。 */
 
 let confirmCallback = null;
 function openConfirm(text, onOk) {
@@ -1181,11 +1196,69 @@ function allJobCategories() {
   Object.values(state.jobs).forEach(function (j) { if (j.category) set.add(j.category); });
   return Array.from(set);
 }
+function fmtSalaryK(n) {
+  return Math.round(n / 1000) + "K";
+}
+function fmtSalary(j) {
+  const min = j.salaryMin, max = j.salaryMax;
+  if (!min && !max) return "";
+  const unit = j.salaryType === "yearly" ? "/年" : "/月";
+  if (min && max) return "NT$" + fmtSalaryK(min) + "–" + fmtSalaryK(max) + unit;
+  if (min) return "NT$" + fmtSalaryK(min) + "+" + unit;
+  return "最高 NT$" + fmtSalaryK(max) + unit;
+}
+const jobCategoryColorPalette = ["purple", "teal", "amber", "blue", "red"];
+function categoryColorCls(category) {
+  if (!category) return "gray";
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) { hash = (hash * 31 + category.charCodeAt(i)) >>> 0; }
+  return jobCategoryColorPalette[hash % jobCategoryColorPalette.length];
+}
+function renderJobStars(jobId, rating) {
+  rating = rating || 0;
+  let out = '<span class="job-stars" data-star-job="' + jobId + '">';
+  for (let i = 1; i <= 5; i++) {
+    const filled = i <= rating;
+    out += '<span class="job-star' + (filled ? " filled" : "") + '" data-star-val="' + i + '">' + fi("star", 15, filled ? { fill: "currentColor" } : {}) + '</span>';
+  }
+  out += '</span>';
+  return out;
+}
+
+function renderJobCard(id, j) {
+  const meta = jobStatusMeta[j.status] || jobStatusMeta.watching;
+  const expanded = expandedJobIds.has(id);
+  const hasDetails = j.resumeVersionId || j.jobDesc || j.mustHave || j.niceToHave || j.notes;
+  return '<div class="card" id="job-card-' + id + '">' +
+    '<div class="card-top job-toggle-zone" data-toggle-job="' + id + '" style="cursor:pointer;">' +
+    '<div><div class="card-title title-accent">' + esc(j.title) + '</div><div class="card-sub">' + esc(j.company || "") + '</div></div>' +
+    (hasDetails ? '<span class="icon-btn" style="pointer-events:none;">' + fi(expanded ? "chevron-up" : "chevron-down", 15) + '</span>' : "") +
+    '</div>' +
+    '<div class="job-rating-row">' + renderJobStars(id, j.interest) +
+    '<select class="status-mini-select job-status-select st-' + meta.cls + '" data-id="' + id + '">' +
+    Object.keys(jobStatusMeta).map(function (k) { return '<option value="' + k + '"' + (j.status === k ? " selected" : "") + '>' + jobStatusMeta[k].label + '</option>'; }).join("") +
+    '</select>' +
+    '</div>' +
+    (j.location || j.jobType ? '<div class="card-meta-row job-toggle-zone" data-toggle-job="' + id + '" style="cursor:pointer;">' + fi("map-pin", 13) + '<span>' + esc(j.location || "未填地點") + (j.jobType ? " · " + esc(j.jobType) : "") + '</span></div>' : "") +
+    (fmtSalary(j) ? '<div class="card-meta-row job-toggle-zone" data-toggle-job="' + id + '" style="cursor:pointer;">' + fi("dollar-sign", 13) + '<span>' + esc(fmtSalary(j)) + (j.salaryNote ? "（" + esc(j.salaryNote) + "）" : "") + '</span></div>' : "") +
+    (expanded ? (
+      (j.resumeVersionId && state.resumeVersions[j.resumeVersionId] ? '<div class="card-meta-row">' + fi("file-text", 13) + '<span>建議使用履歷：' + esc(state.resumeVersions[j.resumeVersionId].name) + '</span></div>' : "") +
+      (j.jobDesc ? '<div><div class="card-desc-label">工作內容</div><div class="card-notes" style="margin-top:0;">' + formatFreeText(j.jobDesc) + '</div></div>' : "") +
+      (j.mustHave ? '<div><div class="card-desc-label">必要能力</div><div class="card-notes" style="margin-top:0;">' + formatFreeText(j.mustHave) + '</div></div>' : "") +
+      (j.niceToHave ? '<div><div class="card-desc-label">加分能力</div><div class="tag-list vertical">' + splitLines(j.niceToHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
+      (j.notes ? '<div><div class="card-desc-label">備註</div><div class="card-notes" style="margin-top:0;">' + nl2br(j.notes) + '</div></div>' : "")
+    ) : "") +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">' +
+    (j.url ? '<a class="job-quick-link" href="' + esc(j.url) + '" target="_blank" rel="noopener" title="開啟職缺連結">' + fi("external-link", 15) + '</a>' : '<span></span>') +
+    '<div class="card-actions"><button class="icon-btn" data-edit-job="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-job="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
+    '</div></div>';
+}
 
 function renderJobs() {
   const catSel = document.getElementById("jobCategoryFilter");
   const prevCatVal = catSel.value;
-  catSel.innerHTML = '<option value="">全部類別</option>' + allJobCategories().map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join("");
+  const catOrder = allJobCategories();
+  catSel.innerHTML = '<option value="">全部類別</option>' + catOrder.map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join("");
   catSel.value = prevCatVal;
 
   const filter = document.getElementById("jobStatusFilter").value;
@@ -1197,36 +1270,34 @@ function renderJobs() {
   jobs.sort(function (a, b) { return (b[1].createdAt || 0) - (a[1].createdAt || 0); });
 
   if (!jobs.length) {
-    grid.innerHTML = '<div class="empty-note" style="grid-column:1/-1;">尚無職缺資料，點擊「新增職缺」開始紀錄</div>';
+    grid.innerHTML = '<div class="empty-note">尚無職缺資料，點擊「新增職缺」開始紀錄</div>';
     return;
   }
-  grid.innerHTML = jobs.map(function (entry) {
-    const id = entry[0], j = entry[1];
-    const meta = jobStatusMeta[j.status] || jobStatusMeta.watching;
-    const expanded = expandedJobIds.has(id);
-    const hasDetails = j.resumeVersionId || j.jobDesc || j.mustHave || j.niceToHave || j.notes || j.url;
-    return '<div class="card" id="job-card-' + id + '">' +
-      '<div class="job-top-row">' +
-      (j.category ? '<span class="badge purple">' + esc(j.category) + '</span>' : '<span></span>') +
-      '<select class="status-mini-select job-status-select st-' + meta.cls + '" data-id="' + id + '">' +
-      Object.keys(jobStatusMeta).map(function (k) { return '<option value="' + k + '"' + (j.status === k ? " selected" : "") + '>' + jobStatusMeta[k].label + '</option>'; }).join("") +
-      '</select>' +
-      '</div>' +
-      '<div class="card-top job-toggle-zone" data-toggle-job="' + id + '" style="cursor:pointer;">' +
-      '<div><div class="card-title title-accent">' + esc(j.title) + '</div><div class="card-sub">' + esc(j.company || "") + '</div></div>' +
-      (hasDetails ? '<span class="icon-btn" style="pointer-events:none;">' + fi(expanded ? "chevron-up" : "chevron-down", 15) + '</span>' : "") +
-      '</div>' +
-      (j.location || j.jobType ? '<div class="card-meta-row job-toggle-zone" data-toggle-job="' + id + '" style="cursor:pointer;">' + fi("map-pin", 13) + '<span>' + esc(j.location || "未填地點") + (j.jobType ? " · " + esc(j.jobType) : "") + '</span></div>' : "") +
-      (expanded ? (
-        (j.resumeVersionId && state.resumeVersions[j.resumeVersionId] ? '<div class="card-meta-row">' + fi("file-text", 13) + '<span>建議使用履歷：' + esc(state.resumeVersions[j.resumeVersionId].name) + '</span></div>' : "") +
-        (j.jobDesc ? '<div><div class="card-desc-label">工作內容</div><div class="card-notes" style="margin-top:0;">' + formatFreeText(j.jobDesc) + '</div></div>' : "") +
-        (j.mustHave ? '<div><div class="card-desc-label">必要能力</div><div class="tag-list vertical">' + splitLines(j.mustHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
-        (j.niceToHave ? '<div><div class="card-desc-label">加分能力</div><div class="tag-list vertical">' + splitLines(j.niceToHave).map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div></div>' : "") +
-        (j.notes ? '<div class="card-notes">' + nl2br(j.notes) + '</div>' : "") +
-        (j.url ? '<a class="card-link" href="' + esc(j.url) + '" target="_blank" rel="noopener">' + fi("external-link", 13) + '職缺連結</a>' : "")
-      ) : "") +
-      '<div style="display:flex;justify-content:flex-end;align-items:center;margin-top:4px;">' +
-      '<div class="card-actions"><button class="icon-btn" data-edit-job="' + id + '">' + fi("edit-2", 14) + '</button><button class="icon-btn" data-del-job="' + id + '">' + fi("trash-2", 14) + '</button></div>' +
+
+  const groups = {};
+  const groupOrder = [];
+  jobs.forEach(function (entry) {
+    const cat = entry[1].category || "未分類";
+    if (!groups[cat]) { groups[cat] = []; groupOrder.push(cat); }
+    groups[cat].push(entry);
+  });
+  groupOrder.sort(function (a, b) {
+    if (a === "未分類") return 1;
+    if (b === "未分類") return -1;
+    return catOrder.indexOf(a) - catOrder.indexOf(b);
+  });
+  groupOrder.forEach(function (cat) {
+    groups[cat].sort(function (a, b) {
+      const diff = (b[1].interest || 0) - (a[1].interest || 0);
+      if (diff !== 0) return diff;
+      return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+    });
+  });
+
+  grid.innerHTML = groupOrder.map(function (cat) {
+    const cls = cat === "未分類" ? "gray" : categoryColorCls(cat);
+    return '<div class="job-category-section"><h3><span class="badge ' + cls + '">' + esc(cat) + '</span><span>（' + groups[cat].length + '）</span></h3><div class="cards-grid">' +
+      groups[cat].map(function (entry) { return renderJobCard(entry[0], entry[1]); }).join("") +
       '</div></div>';
   }).join("");
 
@@ -1245,6 +1316,19 @@ function renderJobs() {
       renderJobs();
     };
   });
+  grid.querySelectorAll(".job-star").forEach(function (el) {
+    el.onclick = function (e) {
+      e.stopPropagation();
+      const wrap = this.closest(".job-stars");
+      const jobId = wrap.getAttribute("data-star-job");
+      const val = parseInt(this.getAttribute("data-star-val"), 10);
+      const job = state.jobs[jobId];
+      if (!job) return;
+      job.interest = (job.interest === val) ? 0 : val;
+      persist();
+      renderJobs();
+    };
+  });
   grid.querySelectorAll("[data-edit-job]").forEach(function (b) {
     b.onclick = function (e) { e.stopPropagation(); openJobModal(this.getAttribute("data-edit-job")); };
   });
@@ -1259,11 +1343,37 @@ function renderJobs() {
   });
 }
 
+function starsPickerHtml(val) {
+  let out = "";
+  for (let i = 1; i <= 5; i++) {
+    const filled = i <= val;
+    out += '<span class="job-star' + (filled ? " filled" : "") + '" data-val="' + i + '">' + fi("star", 19, filled ? { fill: "currentColor" } : {}) + '</span>';
+  }
+  return out;
+}
+function setupInterestPicker(pickerId, hiddenId) {
+  const picker = document.getElementById(pickerId);
+  const hidden = document.getElementById(hiddenId);
+  function redraw() {
+    picker.innerHTML = starsPickerHtml(parseInt(hidden.value, 10) || 0);
+    picker.querySelectorAll(".job-star").forEach(function (s) {
+      s.onclick = function () {
+        let val = parseInt(this.getAttribute("data-val"), 10);
+        if ((parseInt(hidden.value, 10) || 0) === val) val = 0;
+        hidden.value = val;
+        redraw();
+      };
+    });
+  }
+  redraw();
+}
+
 function openJobModal(id) {
-  const j = id ? state.jobs[id] : { title: "", company: "", url: "", location: "", jobType: "", category: "", jobDesc: "", mustHave: "", niceToHave: "", status: "watching", notes: "", resumeVersionId: "" };
+  const j = id ? state.jobs[id] : { title: "", company: "", url: "", location: "", jobType: "", category: "", jobDesc: "", mustHave: "", niceToHave: "", status: "watching", notes: "", resumeVersionId: "", salaryMin: "", salaryMax: "", salaryNote: "", salaryType: "monthly", interest: 0 };
   const cats = allJobCategories();
   ensureResumeVersions();
   const isPreset = !j.category || cats.indexOf(j.category) >= 0;
+  const hasAdvancedData = !!(j.resumeVersionId || j.jobDesc || j.mustHave || j.niceToHave || j.notes || j.salaryMin || j.salaryMax || j.salaryNote);
   const body =
     '<div class="form-field"><label>職缺名稱</label><input class="input" id="fJobTitle" value="' + esc(j.title) + '"></div>' +
     '<div class="form-grid">' +
@@ -1278,17 +1388,30 @@ function openJobModal(id) {
     cats.map(function (c) { return '<option value="' + esc(c) + '"' + (j.category === c ? " selected" : "") + '>' + esc(c) + '</option>'; }).join("") +
     '<option value="__custom__"' + (j.category && !isPreset ? " selected" : "") + '>其他（自訂）...</option>' +
     '</select></div>' +
+    '<div class="form-field"><label>心儀程度</label><div class="job-stars-picker" id="fJobInterestPicker"></div><input type="hidden" id="fJobInterest" value="' + (j.interest || 0) + '"></div>' +
     '</div>' +
     '<div class="form-field" id="fJobCategoryCustomWrap" style="display:' + (isPreset ? "none" : "block") + ';"><label>自訂類別名稱</label><input class="input" id="fJobCategoryCustom" value="' + (isPreset ? "" : esc(j.category)) + '"></div>' +
     '<div class="form-field"><label>職缺網址</label><input class="input" id="fJobUrl" value="' + esc(j.url) + '"></div>' +
+    '<div class="advanced-toggle-row"><button type="button" class="btn btn-secondary btn-sm" id="toggleJobAdvancedBtn"><i data-icon="chevron-down"></i>進階設定（建議履歷版本、薪資、工作內容、能力、備註）</button></div>' +
+    '<div class="advanced-fields' + (hasAdvancedData ? " open" : "") + '" id="jobAdvancedFields">' +
+    '<div class="form-field"><label>薪資計算方式</label><select class="select" id="fJobSalaryType">' +
+    '<option value="monthly"' + (j.salaryType !== "yearly" ? " selected" : "") + '>月薪</option>' +
+    '<option value="yearly"' + (j.salaryType === "yearly" ? " selected" : "") + '>年薪</option>' +
+    '</select></div>' +
+    '<div class="form-grid">' +
+    '<div class="form-field"><label>薪資下限（選填）</label><input class="input" type="number" id="fJobSalaryMin" placeholder="例：40000" value="' + esc(j.salaryMin || "") + '"></div>' +
+    '<div class="form-field"><label>薪資上限（選填）</label><input class="input" type="number" id="fJobSalaryMax" placeholder="例：60000" value="' + esc(j.salaryMax || "") + '"></div>' +
+    '</div>' +
+    '<div class="form-field"><label>薪資備註（選填）</label><input class="input" id="fJobSalaryNote" placeholder="例：經常性薪資、不含獎金、面議" value="' + esc(j.salaryNote || "") + '"></div>' +
     '<div class="form-field"><label>建議使用履歷版本（選填）</label><select class="select" id="fJobResumeVersion">' +
     '<option value="">（不指定）</option>' +
     Object.entries(state.resumeVersions).map(function (entry) { return '<option value="' + entry[0] + '"' + (j.resumeVersionId === entry[0] ? " selected" : "") + '>' + esc(entry[1].name) + '</option>'; }).join("") +
     '</select></div>' +
     '<div class="form-field"><label>工作內容</label><textarea class="textarea" id="fJobDesc" placeholder="可換行列點" style="min-height:90px;">' + esc(j.jobDesc) + '</textarea></div>' +
-    '<div class="form-field"><label>必要能力（每行一項）</label><textarea class="textarea" id="fJobMustHave" placeholder="每行輸入一項能力">' + esc(j.mustHave) + '</textarea></div>' +
+    '<div class="form-field"><label>必要能力</label><textarea class="textarea" id="fJobMustHave" placeholder="可換行列點">' + esc(j.mustHave) + '</textarea></div>' +
     '<div class="form-field"><label>加分能力（每行一項）</label><textarea class="textarea" id="fJobNiceToHave" placeholder="每行輸入一項能力">' + esc(j.niceToHave) + '</textarea></div>' +
-    '<div class="form-field"><label>備註</label><textarea class="textarea" id="fJobNotes">' + esc(j.notes) + '</textarea></div>';
+    '<div class="form-field"><label>備註</label><textarea class="textarea" id="fJobNotes">' + esc(j.notes) + '</textarea></div>' +
+    '</div>';
 
   openModal(id ? "編輯職缺" : "新增職缺", body, [
     { label: "取消", cls: "btn-secondary", onClick: closeModal },
@@ -1304,12 +1427,17 @@ function openJobModal(id) {
         jobType: document.getElementById("fJobType").value.trim(),
         status: document.getElementById("fJobStatus").value,
         category: category,
+        interest: parseInt(document.getElementById("fJobInterest").value, 10) || 0,
         url: document.getElementById("fJobUrl").value.trim(),
         resumeVersionId: document.getElementById("fJobResumeVersion").value,
         jobDesc: document.getElementById("fJobDesc").value.trim(),
         mustHave: document.getElementById("fJobMustHave").value.trim(),
         niceToHave: document.getElementById("fJobNiceToHave").value.trim(),
         notes: document.getElementById("fJobNotes").value.trim(),
+        salaryMin: document.getElementById("fJobSalaryMin").value ? parseInt(document.getElementById("fJobSalaryMin").value, 10) : "",
+        salaryMax: document.getElementById("fJobSalaryMax").value ? parseInt(document.getElementById("fJobSalaryMax").value, 10) : "",
+        salaryType: document.getElementById("fJobSalaryType").value,
+        salaryNote: document.getElementById("fJobSalaryNote").value.trim(),
         createdAt: (id && state.jobs[id]) ? state.jobs[id].createdAt : Date.now()
       };
       state.jobs[id || uid()] = data;
@@ -1322,6 +1450,10 @@ function openJobModal(id) {
   catSelect.onchange = function () {
     document.getElementById("fJobCategoryCustomWrap").style.display = this.value === "__custom__" ? "block" : "none";
   };
+  document.getElementById("toggleJobAdvancedBtn").onclick = function () {
+    document.getElementById("jobAdvancedFields").classList.toggle("open");
+  };
+  setupInterestPicker("fJobInterestPicker", "fJobInterest");
 }
 document.getElementById("addJobBtn").onclick = function () { openJobModal(null); };
 
